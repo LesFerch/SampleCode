@@ -1,0 +1,35 @@
+<html>
+<head>
+<hta:application
+  id = oHTA
+  border = none
+  innerborder = no
+  caption = no
+  sysmenu = no
+  maximizebutton = no
+  minimizebutton = no
+  scroll = no
+  scrollflat = yes
+  singleinstance = yes
+  showintaskbar = no
+  contextmenu = no
+  selection = no
+>
+</head>
+<script language="VBScript">
+Window.ResizeTo 50,50
+CmdLine = oHTA.commandLine
+ArrParms = Split(CmdLine," ")
+If UBound(ArrParms)=2 Then
+  X = ArrParms(1)
+  Y = ArrParms(2)
+  Window.MoveTo X,Y
+Else
+  X = (screen.Width - Width) / 2
+  Y = (screen.Height - Height) / 2  
+  Window.MoveTo X,Y
+End If
+</script>
+<body background = ".\activity.gif">
+</body>
+</html>
