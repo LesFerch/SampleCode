@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<meta http-equiv="x-ua-compatible" content="ie=9">
+<html>
+<head>
+<script>    
+function Refresh() {
+  var Iframe = document.getElementById("chatbox").contentWindow;
+  window.setInterval(function() {
+    var fso = new ActiveXObject("Scripting.FileSystemObject");
+    var fh = fso.OpenTextFile(".\\Chat.txt",1);
+    var FileContents = fh.AtEndOfStream ? "" : fh.ReadAll();
+    fh.Close();
+    Iframe.document.body.innerHTML = "<pre>" + FileContents + "</pre>"
+  }, 500);
+}
+</script>
+<style>
+#chatbox {height:30em;}
+</style>
+</head>
+<body onload="Refresh()">
+  <iframe id=chatbox title="Chat Box">
+</iframe>
+</body>
+</html>
