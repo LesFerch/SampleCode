@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=11">
+<script>
+x = 800; y = 620;
+window.resizeTo(x,y);
+window.moveTo ((screen.availWidth - x)/2, (screen.availHeight - y)/2)
+document.title = "IE11-Mode-Test";
+function PlayVideo(){v1.src = f1.value;}
+</script>
+<style>
+.fc {display:flex; justify-content:center; align-items:center; height:50px; border:3px solid}
+#f1 {width:100%}
+</style>
+</head>
+<body>
+<div class="fc">
+  <p>HTA in IE11 Mode</p>
+</div><br>
+File input with Accept attribute:<br>
+<input type="file" id="f1" accept="video/*" oninput="PlayVideo()"><br><br>
+<video width="100%" controls>
+  <source id="v1" type="video/mp4">
+</video>
+</body>
+</html>

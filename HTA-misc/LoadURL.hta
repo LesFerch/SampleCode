@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="x-ua-compatible" content="ie=9">
+<script language="VBScript">
+'Make the HTA window small and place off screen
+Window.ResizeTo 100,100
+Window.MoveTo -2000,-2000
+
+Set w = window.open("https://www.yahoo.com/","", "")
+TimerID = Window.SetInterval("WaitForComplete", 500, "vbscript")
+
+Sub WaitForComplete
+  If w.document.readyState = "complete" Then
+    Window.ClearInterval TimerID
+    MsgBox "Do next bit of code here"
+    w.Window.Close
+    Window.Close
+  End If
+End Sub
+
+</script>
+</head>
+</html>

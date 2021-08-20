@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="x-ua-compatible" content="ie=9">
+</head>
+<body>
+<textarea id="ta1" cols="80" rows="20">
+</textarea>
+<script type="text/javascript">
+ta1.write = function(txt) {ta1.value += txt + "\r\n";}
+</script>
+<script type="text/vbscript">
+window.resizeTo 700,400
+Set oWMI = GetObject("winmgmts://./root/cimv2")
+Set colProcessors = oWMI.ExecQuery("Select * from Win32_Processor")
+For Each oItem in colProcessors
+    ta1.write "Name                : " & oItem.Name
+    ta1.write "Description         : " & oItem.Description
+    ta1.write "Processor ID        : " & oItem.ProcessorID
+    ta1.write "Address Width       : " & oItem.AddressWidth
+    ta1.write "Data Width          : " & oItem.DataWidth
+    ta1.write "Family              : " & oItem.Family
+    ta1.write "Maximum Clock Speed : " & oItem.MaxClockSpeed
+Next
+Set oItems = oWMI.ExecQuery("Select * from Win32_PhysicalMemory")
+For Each oItem in oItems
+    ta1.write "Total Memory        : " & oItem.Capacity
+Next
+Set oItems = oWMI.ExecQuery("Select * from Win32_VideoController")
+For Each oItem in oItems
+    ta1.write "Display Adapter     : " & oItem.Description
+    ta1.write "Driver Version      : " & oItem.DriverVersion
+    ta1.write "Adapter RAM         : " & Abs(oItem.AdapterRAM)
+Next
+</script>
+</body>
+</html>
