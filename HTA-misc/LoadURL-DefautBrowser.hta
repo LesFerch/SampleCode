@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="x-ua-compatible" content="ie=9" />
+</head>
+<body>
+<a href="https://www.yahoo.com" class="href">Yahoo</a><br><br>
+<a href="https://www.google.com" class="href">Google</a><br><br>
+<a href="https://www.bing.com" class="href">Bing</a><br><br>
+<script>
+	var e = document.getElementsByClassName('href');
+	for(var i=0;i<e.length;i++){
+		e[i].addEventListener('click',function(event){
+			event.preventDefault();
+			new ActiveXObject('WScript.Shell').Run(this.href);
+			return false;
+		},false)
+	}
+</script>
+</body>
+</html>
