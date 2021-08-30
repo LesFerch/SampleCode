@@ -1,14 +1,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9">
-<hta:application
-  navigable=yes
-  application=yes
-  icon="C:\Program Files\Internet Explorer\iexplore.exe"
-  caption=yes
-  sysmenu=yes
-  scroll=no
+<HTA:Application
+  ID=oHTA
+  Navigable=yes
+  Application=yes
+  Icon="C:\Program Files\Internet Explorer\iexplore.exe"
+  Caption=yes
+  Sysmenu=yes
+  Scroll=no
+  SingleInstance=yes
 >
 <script language="vbscript">
-SingleInstance = True
 MyName = "IE11-Mode-Test"
 MyNameHTA = MyName & ".hta"
 MyNameHTM = MyName & ".htm"
@@ -29,6 +30,6 @@ Function ProcessCount(Exe,File)
   Next
 End Function
 
-If SingleInstance And ProcessCount("mshta.exe",MyNameHTA)>1 Then Window.Close
+If LCase(oHTA.singleInstance)="yes" And ProcessCount("mshta.exe",MyNameHTA)>1 Then Window.Close
 location.href = MyNameHTM
 </script>
