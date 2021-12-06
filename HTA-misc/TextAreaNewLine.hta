@@ -1,0 +1,27 @@
+<html>
+<body>
+  <label>Check Which you have:</label><br><br>
+  <input type="checkbox" id="checkbox1" name="bike" value="Bike"> Bike <br>
+  <input type="checkbox" id="checkbox2" name="car" value="Car"> Car <br>
+  <input type="checkbox" id="checkbox3" name="home" value="Home"> Home <br><br>
+  <button onclick="getValue()">Get Value</button><br><br>
+  <textarea wrap=off id="p1" class="field" cols='60' rows='8'></textarea> 
+<BR>
+<script>
+function getValue() {
+  var ele=[]
+  var bike = document.getElementById("checkbox1")
+  if(bike.checked){ele.push(bike.value);}
+
+  var car = document.getElementById("checkbox2")
+  if(car.checked){ele.push(car.value);}
+
+  var home = document.getElementById("checkbox3")
+  if(home.checked){ele.push(home.value);}
+
+  if(ele.length>0){document.getElementById("p1").value = ele.join("\n");}
+  else
+  {document.getElementById("p1").innerHTML = "Nothing selected";}
+}
+</script>
+</body>

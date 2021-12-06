@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<HTA:Application
+  ID=oHTA
+  Icon="C:\Program Files\Windows Media Player\wmplayer.exe"
+>
+<head>
+<meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=9">
+<script language="vbscript">
+Sub window_onload
+  document.title = "Playlist Transmogrifier"
+	x = 600
+	y = 400
+	Window.ResizeTo x, y
+	Window.MoveTo (screen.availWidth - x)/2, (screen.availHeight - y)/2
+End Sub
+Sub ProcessFile
+  MsgBox "File selected:" & f1.value
+End Sub
+</script>
+<style>
+body  {background-color:LightBlue; font-family:Segoe UI; font-size:11pt}
+input[type="button"] {font-family:Segoe UI; font-size:11pt}
+</style>
+</head>
+<body>
+Click the Browse button to select a file to process:<br><br>
+<input type="file" id="f1" style=width:40em accept="video/*" oninput="ProcessFile()">
+</body>
+</html>
