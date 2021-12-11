@@ -95,7 +95,7 @@ namespace FileDialog
                         ItemList.Add(fd.ResultPath);
                     }
                 }
-                fileNames = '"' + fileNames + '"';
+                if (fileNames != "") { fileNames = '"' + fileNames + '"'; }
                 using (RegistryKey FileDialog = Software.CreateSubKey("FileDialog"))
                 {
                     FileDialog.SetValue("", fileName);
