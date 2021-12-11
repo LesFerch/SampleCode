@@ -20,51 +20,65 @@ namespace FileDialog
                 FileDialog.SetValue("ItemList", "?");
                 FileDialog.SetValue("ItemListM", "?");
             }
-            string StartPath;
-            string fileName;
-            string fileNames;
+            string DialogType = "";
+            string DialogTitle = "";
+            string FileFilter = "";
+            string StartPath = "";
+            string fileName = "";
+            string fileNames = "";
+            bool Multi = true;
             var ItemList = new List<string>();
-            fileName = "";
-            fileNames = "";
-            bool multi;
-            multi = true;
-            if (args.Length >= 4)
+            for (int i = 0; i < args.Length; i++)
             {
-                multi = Convert.ToBoolean(args[3]);
+                try
+                {
+                    if (System.IO.Directory.Exists(args[i])) {
+                        StartPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, args[i]));
+                    }
+                }
+                catch
+                {
+                }
+                if (args[i].ToLower() == "open") { DialogType = "Open"; }
+                if (args[i].ToLower() == "save") { DialogType = "Save"; }
+                if (args[i].ToLower() == "folder") { DialogType = "Folder"; }
+                if (args[i].ToLower() == "false") { Multi = false; }
+                if (args[i].Contains("|")) { FileFilter = args[i]; }
+                if (args[i].Substring(0,1) == "~") { DialogTitle = args[i].Substring(1); }
+                if (args[i] == "Documents") { StartPath = "::{450D8FBA-AD25-11D0-98A8-0800361B1103}"; }
+                if (args[i] == "Libraries") { StartPath = "::{031E4825-7B94-4dc3-B131-E946B44C8DD5}"; }
+                if (args[i] == "OneDrive") { StartPath = "::{018D5C66-4533-4307-9B53-224DE2ED1FE6}"; }
+                if (args[i] == "Public") { StartPath = "::{4336a54d-038b-4685-ab02-99bb52d3fb8b}"; }
+                if (args[i] == "ThisPC") { StartPath = "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}"; }
+                if (args[i] == "This PC") { StartPath = "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}"; }
+                if (args[i] == "UserProfile") { StartPath = "::{59031a47-3f72-44a7-89c5-5595fe6b30ee}"; }
             }
-            if (args.Length >= 3)
+            if (DialogType != "")
             {
-                if      (args[2] == "Documents")   { StartPath = "::{450D8FBA-AD25-11D0-98A8-0800361B1103}"; }
-                else if (args[2] == "Libraries")   { StartPath = "::{031E4825-7B94-4dc3-B131-E946B44C8DD5}"; }
-                else if (args[2] == "OneDrive")    { StartPath = "::{018D5C66-4533-4307-9B53-224DE2ED1FE6}"; }
-                else if (args[2] == "Public")      { StartPath = "::{4336a54d-038b-4685-ab02-99bb52d3fb8b}"; }
-                else if (args[2] == "ThisPC")      { StartPath = "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}"; }
-                else if (args[2] == "This PC")     { StartPath = "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}"; }
-                else if (args[2] == "UserProfile") { StartPath = "::{59031a47-3f72-44a7-89c5-5595fe6b30ee}"; }
-                else StartPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, args[2]));
-
-                if (args[0].Equals("Open"))
+                if (DialogType == "Open")
                 {
                     OpenFileDialog fd = new OpenFileDialog
                     {
-                        Filter = args[1],
+                        Title = DialogTitle,
+                        Filter = FileFilter,
                         InitialDirectory = StartPath,
-                        Multiselect = multi
+                        Multiselect = Multi
                     };
                     fd.ShowDialog();
                     fileName = fd.FileName;
                     foreach (String file in fd.FileNames)
                     {
-                        if (fileNames != "") { fileNames += '|'; }
+                        if (fileNames != "") { fileNames = fileNames + '"' + ',' + '"'; }
                         fileNames += file;
                         ItemList.Add(file);
                     }
                 }
-                if (args[0].Equals("Save"))
+                if (DialogType == "Save")
                 {
                     SaveFileDialog fd = new SaveFileDialog
                     {
-                        Filter = args[1],
+                        Title = DialogTitle,
+                        Filter = FileFilter,
                         InitialDirectory = StartPath,
                     };
                     fd.ShowDialog();
@@ -72,10 +86,11 @@ namespace FileDialog
                     fileNames = fd.FileName;
                     ItemList.Add(fd.FileName);
                 }
-                if (args[0].Equals("Folder"))
+                if (DialogType == "Folder")
                 {
                     FolderPicker fd = new FolderPicker
                     {
+                        Title = DialogTitle,
                         InputPath = StartPath,
                     };
                     if (fd.ShowDialog(IntPtr.Zero) == true)
@@ -85,6 +100,7 @@ namespace FileDialog
                         ItemList.Add(fd.ResultPath);
                     }
                 }
+                fileNames = '"' + fileNames + '"';
                 using (RegistryKey FileDialog = Software.CreateSubKey("FileDialog"))
                 {
                     FileDialog.SetValue("", fileName);
@@ -95,25 +111,26 @@ namespace FileDialog
             }
             else
             {
-                Console.WriteLine("Usage: FileDialog.exe DialogType DialogFilter StartPath [Multiselect]");
-                Console.WriteLine("Example: FileDialog.exe Open \"*.ini|*.ini\" C:\\Users false");
-                Console.WriteLine("Example: FileDialog.exe Open \"*.ini|*.ini\" C:\\Users\\");
-                Console.WriteLine("Example: FileDialog.exe Save \"Text files (*.txt)|*.txt\" \"C:\\Users\"");
-                Console.WriteLine("Example: FileDialog.exe Save \"Text files (*.txt)|*.txt\" \"C:\\Users\\\\\"");
-                Console.WriteLine("Example: FileDialog.exe Open \"Image Files(*.PNG;*.JPG)|*.PNG;*.JPG|All files (*.*)|*.*\" \"C:\\Users\"");
-                Console.WriteLine("Example: FileDialog.exe Folder \"\" C:\\Users");
-                Console.WriteLine("At start, ? is written to  HKCU\\Software\\FileDialog");
-                Console.WriteLine("On Cancel, '' is written to  HKCU\\Software\\FileDialog");
-                Console.WriteLine("On Open/Save, filename is written to console and HKCU\\Software\\FileDialog");
-                Console.WriteLine("On Select Folder, folder name is written to console and HKCU\\Software\\FileDialog");
+                Console.WriteLine("Usage: FileDialog.exe DialogType [DialogTitle] [StartPath] [DialogFilter] [Multiselect]");
+                Console.WriteLine("DialogType must be one of: Open Save Folder");
+                Console.WriteLine("Parameters may be specified in any order and are not case sensitive");
+                Console.WriteLine("DialogTitle must start with ~ and be quoted if it contains spaces");
                 Console.WriteLine("If StartPath is quoted, omit or double up trailing backslash");
                 Console.WriteLine("Forward slashes may be used in place of backslash without any need to double up");
                 Console.WriteLine("Relative paths are supported (e.g. .\\MyStuff or ..\\MyStuff)");
-                Console.WriteLine("For Open DialogType, add \"false\" to turn off multiselect");
-                Console.WriteLine("Multiselect is only supported for File Open dialogs and is on (true) by default.");
-                Console.WriteLine("A single filename or folder name is written to HKCU\\Software\\FileDialog Default");
-                Console.WriteLine("Single and multi items are written to HKCU\\Software\\FileDialog ItemList and ItemListM");
-                Console.WriteLine("Supported special StartPath folders: Documents, Libraries, OneDrive, Public, ThisPC, UserProfile");
+                Console.WriteLine("StartPath may also be one of: Documents Libraries OneDrive Public ThisPC UserProfile");
+                Console.WriteLine("Multiselect is supported for File Open dialogs and is on (true) by default.");
+                Console.WriteLine("Example: FileDialog.exe Open C:\\Users \"*.ini|*.ini\" false");
+                Console.WriteLine("Example: FileDialog.exe Open C:\\Users\\ \"*.ini|*.ini\" \"~Select one or more INI files\"");
+                Console.WriteLine("Example: FileDialog.exe Save \"C:\\Users\" \"Text files (*.txt)|*.txt\"");
+                Console.WriteLine("Example: FileDialog.exe Save \"C:\\Users\\\\\" \"Text files (*.txt)|*.txt\"");
+                Console.WriteLine("Example: FileDialog.exe Open \"C:\\Users\" \"Image Files(*.PNG;*.JPG)|*.PNG;*.JPG|All files (*.*)|*.*\"");
+                Console.WriteLine("Example: FileDialog.exe Folder ThisPC");
+                Console.WriteLine("At start, ? is written to  HKCU\\Software\\FileDialog");
+                Console.WriteLine("On Cancel, '' is written to  HKCU\\Software\\FileDialog");
+                Console.WriteLine("Upon user selection, a single, unquoted item is written to HKCU\\Software\\FileDialog Default");
+                Console.WriteLine("Selected items are written in CSV format to the console and HKCU\\Software\\FileDialog ItemList");
+                Console.WriteLine("Selected items are also written as a multi-string to HKCU\\Software\\FileDialog ItemListM");
             }
         }
     }
