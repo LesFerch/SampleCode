@@ -1,6 +1,6 @@
 Set xmlDoc =  CreateObject("Microsoft.XMLDOM")
 xmlFile = ".\gpx.xml"
-xmlDoc.Load XmlFile
+xmlDoc.Load xmlFile
 
 Set xmlNodes = xmlDoc.getElementsByTagName("desc")
 
