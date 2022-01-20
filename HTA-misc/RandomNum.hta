@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=9">
+</head>
+<script language="VBScript">
+document.title = "One to Five"
+Dim max,min,rand
+x = 300
+y = 150
+Window.ResizeTo x, y
+Window.MoveTo (screen.availWidth - x)/2, (screen.availHeight - y)/2
+max=5
+min=1
+Sub window_OnLoad
+  NewRand
+End Sub
+Sub NewRand
+  Randomize
+  rand = Int((max-min+1)*Rnd+min)
+  rb.innerhtml = rand
+End Sub
+</script>
+<h1 id=rb></h1>
+<input type=button value='Click for new random number' onclick=NewRand()>
+</html>
