@@ -1,2 +1,2 @@
 # Foo
-See [ReadMe](./ReadMe.md).
+See [README](./README.md).
