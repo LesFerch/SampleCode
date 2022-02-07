@@ -5,5 +5,5 @@ relative_links:
   collections: true
 include:
   - README.md
-  - FOO.md
+  - Foo.md
 theme: jekyll-theme-tactile
