@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Script Selector</title>
+<meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=9">
+<hta:application
+  id=oHTA
+  icon=Powershell.exe
+>
+<script language="VBScript">
+Const Visible=1
+Const w = 640
+Const h = 480
+Set oWSH = CreateObject("WScript.Shell")
+Window.ResizeTo w, h
+Window.MoveTo (screen.availWidth - w)/2, (screen.availHeight - h)/2
+
+Sub RunScripts
+  If dbg.checked Then x = "-NoExit" Else x = ""
+  If wat.checked Then Wait = True  Else Wait = False
+  Set oElements = document.getElementsByClassName("ps1")
+  For Each oElement in oElements
+    If oElement.checked Then
+      ScriptName = oElement.parentNode.textContent
+      CmdLine = "Powershell.exe " & x & " -ExecutionPolicy Bypass -File " & Chr(34) & ScriptName & Chr(34)
+      oWSH.Run CmdLine,Visible,Wait
+    End If
+  Next
+End Sub
+
+</script>
+<style>
+body {background-color:LemonChiffon; font-family:Segoe UI; font-size:11pt}
+br {font-size: 16pt} 
+</style>
+</head>
+<body>
+<input id=dbg type=checkbox>Debug (check to keep PowerShell console open)<br>
+<input id=wat type=checkbox>Run scripts synchronously<br><br>
+<label><input class=ps1 type=checkbox>PowerShell Script 1.ps1</label><br>
+<label><input class=ps1 type=checkbox>PowerShell Script 2.ps1</label><br>
+<label><input class=ps1 type=checkbox>PowerShell Script 3.ps1</label><br><br>
+<input type=button value="Run selected scripts" onclick=RunScripts()>
+</body>
+</html>
