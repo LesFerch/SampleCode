@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Script Selector</title>
+<meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=9">
+<hta:application
+  id=oHTA
+  icon=Powershell.exe
+>
+<script>
+Visible=1;
+NoWait = false;
+w = 640;
+h = 480;
+oWSH = new ActiveXObject("WScript.shell");
+window.resizeTo(w, h);
+window.moveTo((screen.availWidth - w)/2, (screen.availHeight - h)/2);
+
+function RunScript(ScriptName) {
+  if (db.checked) { x = "-NoExit"} else {x = ""}
+  CmdLine = 'Powershell.exe ' + x + ' -ExecutionPolicy Bypass -File "' + ScriptName + '"';
+  oWSH.Run(CmdLine,Visible,NoWait);
+}
+
+</script>
+<style>
+body  {background-color:LemonChiffon; font-family:Segoe UI; font-size:11pt}
+br {font-size: 16pt} 
+</style>
+</head>
+<body>
+<input id=db type=checkbox>Debug (check to keep PowerShell console open)<br>
+<input id=b1 type=button value="PowerShell Script 1.ps1" onclick=RunScript(b1.value)><br>
+<input id=b2 type=button value="PowerShell Script 2.ps1" onclick=RunScript(b2.value)><br>
+<input id=b3 type=button value="PowerShell Script 3.ps1" onclick=RunScript(b3.value)><br>
+</body>
+</html>

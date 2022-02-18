@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Script Selector</title>
+<meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=9">
+<hta:application
+  id=oHTA
+  icon=Powershell.exe
+>
+<script language="VBScript">
+Const Visible=1
+Const NoWait = False
+Const w = 640
+Const h = 480
+Set oWSH = CreateObject("WScript.Shell")
+Window.ResizeTo w, h
+Window.MoveTo (screen.availWidth - w)/2, (screen.availHeight - h)/2
+
+Sub RunScript(ScriptName)
+  If db.checked Then x = "-NoExit" Else x = ""
+  CmdLine = "Powershell.exe " & x & " -ExecutionPolicy Bypass -File " & Chr(34) & ScriptName & Chr(34)
+  oWSH.Run CmdLine,Visible,NoWait
+End Sub
+
+</script>
+<style>
+body  {background-color:LemonChiffon; font-family:Segoe UI; font-size:11pt}
+br {font-size: 16pt} 
+</style>
+</head>
+<body>
+<input id=db type=checkbox>Debug (check to keep PowerShell console open)<br>
+<input id=b1 type=button value="PowerShell Script 1.ps1" onclick=RunScript(b1.value)><br>
+<input id=b2 type=button value="PowerShell Script 2.ps1" onclick=RunScript(b2.value)><br>
+<input id=b3 type=button value="PowerShell Script 3.ps1" onclick=RunScript(b3.value)><br>
+</body>
+</html>
