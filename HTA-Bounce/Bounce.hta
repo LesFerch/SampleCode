@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=9">
+<hta:application
+  id = oHTA
+  icon = wscript.exe
+  border = none
+  caption = no
+  scroll = no
+  showintaskbar = yes
+>
+</head>
+<body>
+<body background = ".\Bounce.gif">
+<script>
+size = 96;
+window.resizeTo(size,size);
+xstep = 3;
+ystep = 3;
+
+width = screen.availWidth;
+height = screen.availHeight;
+
+x = Math.floor(Math.random() * width);
+y = Math.floor(Math.random() * height);
+
+setInterval( function(){
+
+  x = x + xstep;
+  y = y + ystep;
+  window.moveTo(x,y);
+  
+  // right 
+  if ( x + size >= width ) {
+    x = width - size;
+      xstep = xstep * -1;
+  }
+  
+  // left
+  if ( x <= 0 ) {
+    x = 0;
+      xstep = xstep * -1;
+  }
+  
+  // down
+  if ( y + size >= height ) {
+    y = height - size;
+      ystep = ystep * -1;
+  }
+  
+  // up
+  if ( y <= 0 ) {
+    y = 0;
+      ystep = ystep * -1;
+  }
+}, 10 );
+</script>
+</body>
+</html>
