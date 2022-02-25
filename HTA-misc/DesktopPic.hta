@@ -44,17 +44,20 @@ CmdLine = Replace(CmdLine,Chr(34) & " " & Chr(34),"|")
 CmdLine = Replace(CmdLine,Chr(34),"")
 aParam = Split(CmdLine,"|")
 
+MyPath  = Mid(document.url,8)
+MyFolder = oFSO.GetParentFolderName(MyPath)
+MyName = oFSO.GetFileName(MyPath)
+MyTitle = Split(MyName,".")(0)
+
 If UBound(aParam)>0 Then
   If IsNumeric(aParam(1)) Then i = aParam(1) - 1
 End If
 If OptionMode Then
   PicPath = aParam(2)
   HTAName = aParam(3)
+  MyTitle = Split(HTAName,".")(0)
   oWSH.CurrentDirectory = PicPath
 End If
-
-MyPath  = Mid(document.url,8)
-MyFolder = oFSO.GetParentFolderName(MyPath)
 
 If OptionMode Then
   oFSO.DeleteFile(MyPath)
@@ -62,10 +65,8 @@ Else
   oWSH.CurrentDirectory = MyFolder
 End If
 
-MyName = oFSO.GetFileName(MyPath)
-
 PicPath = oWSH.CurrentDirectory & "\"
-INIFile = PicPath & "DesktopPic.ini"
+INIFile = PicPath & MyTitle & ".ini"
 
 Ini2Dict
 If oSettings.Exists("[Options]RunOnStartup") Then RunOnStartup = (LCase(oSettings.Item("[Options]RunOnStartup"))="true")
@@ -94,21 +95,89 @@ For Each oFile In oFiles
   End If
 Next
 
+Sub Ini2Dict
+  If oFSO.FileExists(INIFile) Then 
+    Set oFile = oFSO.OpenTextFile(INIFile,ForReading)
+    Do Until oFile.AtEndOfStream
+      Line = Trim(oFile.ReadLine)
+      If Line<>"" And Left(Line,1)<>";" Then
+        If Left(Line,1)="[" Then
+          Section = Line
+        Else
+          ArrLine = Split(Line,"=")
+          If UBound(Arrline)=1 Then oSettings.Add Section & ArrLine(0),ArrLine(1)
+        End If
+      End If
+    Loop
+    oFile.Close
+  End If
+End Sub
+
+Sub window_onLoad
+  Document.Title = MyTitle
+  If Not BringToFront Then Window.blur
+  If Coordinates<>"" Then RepositionWindow
+
+  Crs.checked = RunOnStartup
+  ToggleShortcut
+
+  If OptionMode Then
+    ShowOptions
+  Else
+    HideOptions
+  End If
+  
+  If oList.Count=0 Then
+    MsgBox "Please place at least one image file in " & MyFolder,vbOKonly,"No image files found"
+    self.close
+  Else
+    LoadPic
+  End If
+
+  If OptionMode Then
+    UpdatePos = Window.SetInterval("UpdatePosition()", 500)
+  Else
+    If oList.Count>1 Then PicTimer = Window.SetInterval("LoadPic()", PicDelay*1000)
+  End If
+
+End Sub
+
+Sub RepositionWindow
+  aCoords = Split(Coordinates,",")
+  x = aCoords(0)
+  y = aCoords(1)
+  If OptionMode Then
+    Window.MoveTo x - BorderWidth, y
+  Else
+    Window.MoveTo x, y
+  End If
+End Sub
+
 Sub ToggleShortcut
-  'MsgBox "ToggleShortcut"
   RunOnstartup = Crs.checked
-  ShortCutPath = oWSH.SpecialFolders("Startup") & "\DesktopPic.lnk"
+  ShortCutPath = oWSH.SpecialFolders("Startup") & "\" & MyTitle & ".lnk"
   If RunOnstartup Then
     If Not oFSO.FileExists(ShortCutPath) Then
       Set link = oWSH.CreateShortcut(ShortCutPath)
       link.HotKey = "CTRL+ALT+SHIFT+P"
-      link.TargetPath = "C:\SampleCode\DesktopPic\DesktopPic.hta"
+      link.TargetPath = PicPath & MyTitle & ".hta"
       link.Save
     End If
   Else
     If oFSO.FileExists(ShortCutPath) Then
-      oFSO.DeleteFile oWSH.SpecialFolders("Startup") & "\DesktopPic.lnk"
+      oFSO.DeleteFile oWSH.SpecialFolders("Startup") & "\" & MyTitle & ".lnk"
     End If
+  End If
+End Sub
+
+Sub UpdatePosition
+  w = Window.outerWidth
+  h = Window.outerHeight
+  Tpp.Value = Cint((w * h) / (sw * sh) * 100)
+  Tsp.Value = window.screenX + BorderWidth & "," & window.screenY
+  If Mpp.SelectedIndex=0 And Tsp.Value<>CenterCoordinates Then
+    Mpp.SelectedIndex=1
+    Tsp.style.visibility = "visible"
   End If
 End Sub
 
@@ -147,55 +216,28 @@ Sub CenterWindow
   CenterCoordinates = window.screenX + BorderWidth & "," & window.screenY
 End Sub
 
-Sub RepositionWindow
-  aCoords = Split(Coordinates,",")
-  x = aCoords(0)
-  y = aCoords(1)
-  If OptionMode Then
-    Window.MoveTo x - BorderWidth, y
-  Else
-    Window.MoveTo x, y
-  End If
-End Sub
-
-Sub OnChangeTsp
-  If tsp.value<>"" Then 
-    Coordinates = Tsp.value
-    If Not Instr(Coordinates,",") Then Coordinates = Coordinates & ",0"
-    RepositionWindow
-  End If
-End Sub
-
-Sub window_onLoad
-  If Not BringToFront Then Window.blur()
-  If Coordinates<>"" Then RepositionWindow
-
+Sub ShowOptions
+  document.body.style.visibility = "visible"
+  Crs.Style.Zoom = 1.2
+  Cbf.Style.Zoom = 1.2
+  Csp.Style.Zoom = 1.2
   Crs.checked = RunOnStartup
-  ToggleShortcut
-
-  If OptionMode Then
-    ShowOptions
+  Cbf.checked = BringToFront
+  Csp.checked = Stretch
+  Tpd.Value = PicDelay
+  Tpp.Value = MaxScrPct
+  Tsp.Value = Coordinates
+  If Coordinates="" Then
+    Tsp.style.visibility = "hidden"
   Else
-    HideOptions
+    mpp.SelectedIndex = 1
+    Tsp.style.visibility = "visible"
   End If
-  
-  If oList.Count=0 Then
-    MsgBox "Please place at least one image file in " & MyFolder,vbOKonly,"No image files found"
-    self.close
-  Else
-    LoadPic
-  End If
-
-  If OptionMode Then
-    UpdatePos = Window.SetInterval("UpdatePosition()", 500)
-  Else
-    If oList.Count>1 Then PicTimer = Window.SetInterval("LoadPic()", PicDelay*1000)
-  End If
-
 End Sub
 
-Sub window_onUnload
-  If OptionMode Then Var2Ini
+Sub HideOptions
+  document.body.style.visibility = "hidden"
+  Tsp.style.visibility = "hidden"
 End Sub
 
 Sub document_onKeyDown
@@ -233,26 +275,6 @@ Sub ContinueShow
   End If
 End Sub
 
-Sub UpdatePosition
-  w = Window.outerWidth
-  h = Window.outerHeight
-  Tpp.Value = Cint((w * h) / (sw * sh) * 100)
-  Tsp.Value = window.screenX + BorderWidth & "," & window.screenY
-  If Mpp.SelectedIndex=0 And Tsp.Value<>CenterCoordinates Then
-    Mpp.SelectedIndex=1
-    Tsp.style.visibility = "visible"
-  End If
-End Sub
-
-Sub OnChangeMPP
-  If Mpp.SelectedIndex=1 Then
-    Tsp.style.visibility = "visible"
-  Else
-    CenterWindow
-    Tsp.style.visibility = "hidden"
-  End If
-End Sub
-
 Sub LaunchTempHTA
   clearInterval(PicTimer)
   oWSH.CurrentDirectory = MyFolder
@@ -270,28 +292,12 @@ Sub LaunchTempHTA
   self.close
 End Sub
 
-Sub ShowOptions
-  document.body.style.visibility = "visible"
-  Crs.Style.Zoom = 1.2
-  Cbf.Style.Zoom = 1.2
-  Csp.Style.Zoom = 1.2
-  Crs.checked = RunOnStartup
-  Cbf.checked = BringToFront
-  Csp.checked = Stretch
-  Tpd.Value = PicDelay
-  Tpp.Value = MaxScrPct
-  Tsp.Value = Coordinates
-  If Coordinates="" Then
-    Tsp.style.visibility = "hidden"
-  Else
-    mpp.SelectedIndex = 1
-    Tsp.style.visibility = "visible"
-  End If
+Sub OnFocusInput
+  ClearInterval(UpdatePos)
 End Sub
 
-Sub HideOptions
-  document.body.style.visibility = "hidden"
-  Tsp.style.visibility = "hidden"
+Sub OnBlurInput
+  UpdatePos = Window.SetInterval("UpdatePosition()", 500)
 End Sub
 
 Sub OnInputDigits(id)
@@ -302,8 +308,8 @@ Sub OnInputDigitsComma(id)
   document.getElementByID(id).Value = DigitsComma.Replace(document.getElementByID(id).Value,"")
 End Sub
 
-Sub OnInputTpp
-  Tpp.Value = DigitsOnly.Replace(Tpp.Value,"")
+Sub OnChangeTpd
+  If Tpd.Value<1 Then Tpd.Value = 1
 End Sub
 
 Sub OnChangeTpp
@@ -316,20 +322,25 @@ Sub OnChangeTpp
   ResizeWindow
 End Sub
 
-Sub OnChangeTpd
-  If Tpd.Value<1 Then Tpd.Value = 1
+Sub OnChangeMPP
+  If Mpp.SelectedIndex=1 Then
+    Tsp.style.visibility = "visible"
+  Else
+    CenterWindow
+    Tsp.style.visibility = "hidden"
+  End If
 End Sub
 
-Sub OnInputTpd
-  Tpd.Value = DigitsOnly.Replace(Tpd.Value,"")
+Sub OnChangeTsp
+  If tsp.value<>"" Then 
+    Coordinates = Tsp.value
+    If Not Instr(Coordinates,",") Then Coordinates = Coordinates & ",0"
+    RepositionWindow
+  End If
 End Sub
 
-Sub OnFocusInput
-  ClearInterval(UpdatePos)
-End Sub
-
-Sub OnBlurInput
-  UpdatePos = Window.SetInterval("UpdatePosition()", 500)
+Sub window_onUnload
+  If OptionMode Then Var2Ini
 End Sub
 
 Sub Var2Ini
@@ -343,24 +354,6 @@ Sub Var2Ini
   If Mpp.SelectedIndex=0 Then Tsp.Value=""
   oFile.Write "Coordinates=" & Tsp.Value & Z
   oFile.Close
-End Sub
-
-Sub Ini2Dict
-  If oFSO.FileExists(INIFile) Then 
-    Set oFile = oFSO.OpenTextFile(INIFile,ForReading)
-    Do Until oFile.AtEndOfStream
-      Line = Trim(oFile.ReadLine)
-      If Line<>"" And Left(Line,1)<>";" Then
-        If Left(Line,1)="[" Then
-          Section = Line
-        Else
-          ArrLine = Split(Line,"=")
-          If UBound(Arrline)=1 Then oSettings.Add Section & ArrLine(0),ArrLine(1)
-        End If
-      End If
-    Loop
-    oFile.Close
-  End If
 End Sub
 
 </script>
