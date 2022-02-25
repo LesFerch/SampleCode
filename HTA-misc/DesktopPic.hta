@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>DesktopPic</title>
+<meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=9">
+<hta:application
+  id=oHTA
+  icon=colorcpl.exe
+  showintaskbar=no
+  border=none
+  caption=no
+>
+<script language="VBScript">
+Window.ResizeTo 1,1
+Window.MoveTo -2000,-2000
+
+Const ForReading = 1
+Const ForWriting = 2
+Const TaskbarHeight = 30
+Const BorderWidth = 8
+Set oWSH = CreateObject("Wscript.Shell")
+Set oFSO = CreateObject("Scripting.FileSystemObject")
+Set oImg = CreateObject("WIA.ImageFile")
+Set oList = CreateObject("System.Collections.ArrayList")
+Set oSettings = CreateObject("Scripting.Dictionary")
+Set DigitsOnly = New RegExp: DigitsOnly.Pattern = "[^0-9]"
+Set DigitsComma = New RegExp: DigitsComma.Pattern = "[^0-9,]"
+Dim PicTimer,UpdatePos,w,h,iw,ih,CenterCoordinates
+Z = VBCRLF
+
+RunOnStartup = False
+BringToFront = True
+Stretch = False
+PicDelay = 5
+MaxScrPct = 25
+Coordinates = ""
+Forward = True
+i = -1
+
+OptionMode = oHTA.caption="yes"
+
+CmdLine = Replace(oHTA.commandLine,Chr(34) & "  " & Chr(34),"|")
+CmdLine = Replace(CmdLine,Chr(34) & " " & Chr(34),"|")
+CmdLine = Replace(CmdLine,Chr(34),"")
+aParam = Split(CmdLine,"|")
+
+If UBound(aParam)>0 Then
+  If IsNumeric(aParam(1)) Then i = aParam(1) - 1
+End If
+If OptionMode Then
+  PicPath = aParam(2)
+  HTAName = aParam(3)
+  oWSH.CurrentDirectory = PicPath
+End If
+
+MyPath  = Mid(document.url,8)
+MyFolder = oFSO.GetParentFolderName(MyPath)
+
+If OptionMode Then
+  oFSO.DeleteFile(MyPath)
+Else
+  oWSH.CurrentDirectory = MyFolder
+End If
+
+MyName = oFSO.GetFileName(MyPath)
+
+PicPath = oWSH.CurrentDirectory & "\"
+INIFile = PicPath & "DesktopPic.ini"
+
+Ini2Dict
+If oSettings.Exists("[Options]RunOnStartup") Then RunOnStartup = (LCase(oSettings.Item("[Options]RunOnStartup"))="true")
+If oSettings.Exists("[Options]BringToFront") Then BringToFront = (LCase(oSettings.Item("[Options]BringToFront"))="true")
+If oSettings.Exists("[Options]Stretch") Then Stretch = (LCase(oSettings.Item("[Options]Stretch"))="true")
+If oSettings.Exists("[Options]PicDelay") Then PicDelay = oSettings.Item("[Options]PicDelay")
+If oSettings.Exists("[Options]MaxScrPct") Then MaxScrPct = oSettings.Item("[Options]MaxScrPct")
+If oSettings.Exists("[Options]Coordinates") Then Coordinates = oSettings.Item("[Options]Coordinates")
+If Stretch="" Then Stretch = False
+If PicDelay="" Then PicDelay = 5
+If MaxScrPct="" Then MaxScrPct = 25
+
+sw = screen.availWidth
+sh = screen.availHeight
+
+Set oFolder = oFSO.GetFolder(PicPath)
+Set oFiles = oFolder.Files
+For Each oFile In oFiles
+  On Error Resume Next
+  oImg.LoadFile(oFile.Name)
+  If Err.Number=0 Then IsImage=True Else IsImage=False
+  On Error Goto 0
+  If IsImage Then
+    iw = oImg.Width: ih = oImg.Height
+    oList.Add oFile.Name & "|" & iw & "|" & ih
+  End If
+Next
+
+Sub ToggleShortcut
+  'MsgBox "ToggleShortcut"
+  RunOnstartup = Crs.checked
+  ShortCutPath = oWSH.SpecialFolders("Startup") & "\DesktopPic.lnk"
+  If RunOnstartup Then
+    If Not oFSO.FileExists(ShortCutPath) Then
+      Set link = oWSH.CreateShortcut(ShortCutPath)
+      link.HotKey = "CTRL+ALT+SHIFT+P"
+      link.TargetPath = "C:\SampleCode\DesktopPic\DesktopPic.hta"
+      link.Save
+    End If
+  Else
+    If oFSO.FileExists(ShortCutPath) Then
+      oFSO.DeleteFile oWSH.SpecialFolders("Startup") & "\DesktopPic.lnk"
+    End If
+  End If
+End Sub
+
+Sub LoadPic
+  If Forward Then i = i + 1 Else i = i - 1
+  If i=oList.Count Then i = 0
+  If i<0 Then i = oList.Count - 1
+  aImage = Split(oList(i),"|")
+  iw = aImage(1): ih = aImage(2)
+  ResizePic
+  window.document.body.background = PicPath & aImage(0)
+  If OptionMode Then h = h + BorderWidth
+  ResizeWindow
+  If Coordinates="" Then CenterWindow
+End Sub
+
+Sub ResizePic
+  MaxArea = sw * sh * (MaxScrPct/100)
+  ImgArea = iw * ih
+  w = iw: h = ih
+  If ImgArea>MaxArea Or Stretch Or OptionMode Then
+    ResizeFactor = Sqr(MaxArea/ImgArea)
+    w = iw * ResizeFactor
+    h = ih * ResizeFactor
+    If w>sw Then w = sw: h = sw/w * h
+    If h>sh Then h = sh: w = sh/h * w
+  End If
+End Sub
+
+Sub ResizeWindow
+	Window.ResizeTo w, h
+End Sub
+
+Sub CenterWindow
+	Window.MoveTo (sw - w)/2, (sh - h)/2
+  CenterCoordinates = window.screenX + BorderWidth & "," & window.screenY
+End Sub
+
+Sub RepositionWindow
+  aCoords = Split(Coordinates,",")
+  x = aCoords(0)
+  y = aCoords(1)
+  If OptionMode Then
+    Window.MoveTo x - BorderWidth, y
+  Else
+    Window.MoveTo x, y
+  End If
+End Sub
+
+Sub OnChangeTsp
+  If tsp.value<>"" Then 
+    Coordinates = Tsp.value
+    If Not Instr(Coordinates,",") Then Coordinates = Coordinates & ",0"
+    RepositionWindow
+  End If
+End Sub
+
+Sub window_onLoad
+  If Not BringToFront Then Window.blur()
+  If Coordinates<>"" Then RepositionWindow
+
+  Crs.checked = RunOnStartup
+  ToggleShortcut
+
+  If OptionMode Then
+    ShowOptions
+  Else
+    HideOptions
+  End If
+  
+  If oList.Count=0 Then
+    MsgBox "Please place at least one image file in " & MyFolder,vbOKonly,"No image files found"
+    self.close
+  Else
+    LoadPic
+  End If
+
+  If OptionMode Then
+    UpdatePos = Window.SetInterval("UpdatePosition()", 500)
+  Else
+    If oList.Count>1 Then PicTimer = Window.SetInterval("LoadPic()", PicDelay*1000)
+  End If
+
+End Sub
+
+Sub window_onUnload
+  If OptionMode Then Var2Ini
+End Sub
+
+Sub document_onKeyDown
+  Select Case window.event.keyCode
+    Case 32, 39
+      If Not OptionMode Then 
+        HideOptions
+        Forward = True
+        clearInterval(PicTimer)
+        LoadPic
+      End If
+    Case 8, 37
+      If Not OptionMode Then 
+        HideOptions
+        Forward = False
+        clearInterval(PicTimer)
+        LoadPic
+      End If
+    Case 13
+      ContinueShow
+    Case 27
+      If Not OptionMode Then LaunchTempHTA
+  End Select
+End Sub
+
+Sub ContinueShow
+  If OptionMode Then
+    oWSH.Run Chr(34) & PicPath & HTAName & Chr(34) & " " & Chr(34) & i & Chr(34),1,False
+    self.close
+  Else
+    HideOptions
+    Forward = True
+    clearInterval(PicTimer)
+    PicTimer = Window.SetInterval("LoadPic()", PicDelay*1000)
+  End If
+End Sub
+
+Sub UpdatePosition
+  w = Window.outerWidth
+  h = Window.outerHeight
+  Tpp.Value = Cint((w * h) / (sw * sh) * 100)
+  Tsp.Value = window.screenX + BorderWidth & "," & window.screenY
+  If Mpp.SelectedIndex=0 And Tsp.Value<>CenterCoordinates Then
+    Mpp.SelectedIndex=1
+    Tsp.style.visibility = "visible"
+  End If
+End Sub
+
+Sub OnChangeMPP
+  If Mpp.SelectedIndex=1 Then
+    Tsp.style.visibility = "visible"
+  Else
+    CenterWindow
+    Tsp.style.visibility = "hidden"
+  End If
+End Sub
+
+Sub LaunchTempHTA
+  clearInterval(PicTimer)
+  oWSH.CurrentDirectory = MyFolder
+  Temp  = oWSH.ExpandEnvironmentStrings("%Temp%")
+  TempHTA = Temp & "\" & Replace(Replace(Replace(Now(),"/",""),":","")," ","") & ".hta"
+  Set oFile = oFSO.OpenTextFile(MyPath,ForReading)
+  MyCode = oFile.ReadAll
+  oFile.Close
+  MyCode = Replace(MyCode,LCase("CAPTION=NO"),"caption=yes")
+  MyCode = Replace(MyCode,LCase("BORDER=NONE"),"border=thick")
+  Set oFile = oFSO.OpenTextFile(TempHTA,ForWriting,True)
+  oFile.Write MyCode
+  oFile.Close
+  oWSH.Run TempHTA & " " & Chr(34) & i & Chr(34) & " " & Chr(34) & MyFolder & Chr(34) & " " & Chr(34) & MyName & Chr(34),1,False
+  self.close
+End Sub
+
+Sub ShowOptions
+  document.body.style.visibility = "visible"
+  Crs.Style.Zoom = 1.2
+  Cbf.Style.Zoom = 1.2
+  Csp.Style.Zoom = 1.2
+  Crs.checked = RunOnStartup
+  Cbf.checked = BringToFront
+  Csp.checked = Stretch
+  Tpd.Value = PicDelay
+  Tpp.Value = MaxScrPct
+  Tsp.Value = Coordinates
+  If Coordinates="" Then
+    Tsp.style.visibility = "hidden"
+  Else
+    mpp.SelectedIndex = 1
+    Tsp.style.visibility = "visible"
+  End If
+End Sub
+
+Sub HideOptions
+  document.body.style.visibility = "hidden"
+  Tsp.style.visibility = "hidden"
+End Sub
+
+Sub OnInputDigits(id)
+  document.getElementByID(id).Value = DigitsOnly.Replace(document.getElementByID(id).Value,"")
+End Sub
+
+Sub OnInputDigitsComma(id)
+  document.getElementByID(id).Value = DigitsComma.Replace(document.getElementByID(id).Value,"")
+End Sub
+
+Sub OnInputTpp
+  Tpp.Value = DigitsOnly.Replace(Tpp.Value,"")
+End Sub
+
+Sub OnChangeTpp
+  If Tpp.Value<1 Or Tpp.Value>100 Then
+    Tpp.Value = MaxScrPct
+  Else
+    MaxScrPct = Tpp.Value
+    ResizePic
+  End If
+  ResizeWindow
+End Sub
+
+Sub OnChangeTpd
+  If Tpd.Value<1 Then Tpd.Value = 1
+End Sub
+
+Sub OnInputTpd
+  Tpd.Value = DigitsOnly.Replace(Tpd.Value,"")
+End Sub
+
+Sub OnFocusInput
+  ClearInterval(UpdatePos)
+End Sub
+
+Sub OnBlurInput
+  UpdatePos = Window.SetInterval("UpdatePosition()", 500)
+End Sub
+
+Sub Var2Ini
+  Set oFile = oFSO.OpenTextFile(INIFile,ForWriting,True)
+  oFile.Write "[Options]" & Z
+  oFile.Write "RunOnStartup=" & Crs.checked & Z
+  oFile.Write "BringToFront=" & Cbf.checked & Z
+  oFile.Write "Stretch=" & Csp.checked & Z
+  oFile.Write "PicDelay=" & Tpd.Value & Z
+  oFile.Write "MaxScrPct=" & Tpp.Value & Z
+  If Mpp.SelectedIndex=0 Then Tsp.Value=""
+  oFile.Write "Coordinates=" & Tsp.Value & Z
+  oFile.Close
+End Sub
+
+Sub Ini2Dict
+  If oFSO.FileExists(INIFile) Then 
+    Set oFile = oFSO.OpenTextFile(INIFile,ForReading)
+    Do Until oFile.AtEndOfStream
+      Line = Trim(oFile.ReadLine)
+      If Line<>"" And Left(Line,1)<>";" Then
+        If Left(Line,1)="[" Then
+          Section = Line
+        Else
+          ArrLine = Split(Line,"=")
+          If UBound(Arrline)=1 Then oSettings.Add Section & ArrLine(0),ArrLine(1)
+        End If
+      End If
+    Loop
+    oFile.Close
+  End If
+End Sub
+
+</script>
+<style>
+body {background-size:cover}
+br {font-size: 16pt} 
+.cc {
+font-family: sans-serif;
+font-weight: normal;
+font-size: 11pt;
+color: white;
+background: rgba(0,0,0,.4);
+padding: 1pt;
+border-radius: 2pt;
+}
+</style>
+</head>
+<body>
+<input type=checkbox id=Crs OnClick=ToggleShortcut()>
+<span class=cc>Run on startup</span><br>
+<input type=checkbox id=Cbf>
+<span class=cc>Bring to front on start</span><br>
+<input type=checkbox id=Csp>
+<span class=cc>Stretch smaller pictures</span><br>
+<input type=text size=5 id=Tpd MaxLength=5 OnFocus=OnFocusInput() OnBlur=OnBlurInput() OnInput=OnInputDigits("Tpd") OnChange=OnChangeTpd()>
+<span class=cc>Pic delay in seconds</span><br>
+<input type=text size=5 id=Tpp MaxLength=3 OnFocus=OnFocusInput() OnBlur=OnBlurInput() OnInput=OnInputDigits("Tpp") OnChange=OnChangeTpp()>
+<span class=cc>Max percent of screen area</span><br>
+
+<select id=Mpp  OnChange=OnChangeMpp()>
+<option>Centered</option>
+<option>Custom</option>
+</select>
+<span class=cc>Window position</span>
+<input type=text size=11 id=Tsp MaxLength=11 OnFocus=OnFocusInput() OnBlur=OnBlurInput() OnInput=OnInputDigitsComma("Tsp") OnChange=OnChangeTsp()>
+<br><br>
+<input type=button id=Bcn Value=Continue onclick=ContinueShow()>
+
+</body>
+</html>
