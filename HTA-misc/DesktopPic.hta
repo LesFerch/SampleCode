@@ -9,6 +9,7 @@
   showintaskbar=no
   border=none
   caption=no
+  scroll=no
 >
 <script language="VBScript">
 Window.ResizeTo 1,1
@@ -16,8 +17,6 @@ Window.MoveTo -2000,-2000
 
 Const ForReading = 1
 Const ForWriting = 2
-Const TaskbarHeight = 30
-Const BorderWidth = 8
 Set oWSH = CreateObject("Wscript.Shell")
 Set oFSO = CreateObject("Scripting.FileSystemObject")
 Set oImg = CreateObject("WIA.ImageFile")
@@ -25,7 +24,7 @@ Set oList = CreateObject("System.Collections.ArrayList")
 Set oSettings = CreateObject("Scripting.Dictionary")
 Set DigitsOnly = New RegExp: DigitsOnly.Pattern = "[^0-9]"
 Set DigitsComma = New RegExp: DigitsComma.Pattern = "[^0-9,]"
-Dim PicTimer,UpdatePos,w,h,iw,ih,CenterCoordinates
+Dim PicTimer,UpdatePos,w,h,iw,ih,CenterCoordinates,hTpp,wTpp
 Z = VBCRLF
 
 RunOnStartup = False
@@ -38,6 +37,7 @@ Forward = True
 i = -1
 
 OptionMode = oHTA.caption="yes"
+BorderSize = 0: If OptionMode Then BorderSize = 8
 
 CmdLine = Replace(oHTA.commandLine,Chr(34) & "  " & Chr(34),"|")
 CmdLine = Replace(CmdLine,Chr(34) & " " & Chr(34),"|")
@@ -118,7 +118,7 @@ Sub window_onLoad
   If Not BringToFront Then Window.blur
   If Coordinates<>"" Then RepositionWindow
 
-  Crs.checked = RunOnStartup
+  Crs.Checked = RunOnStartup
   ToggleShortcut
 
   If OptionMode Then
@@ -134,8 +134,10 @@ Sub window_onLoad
     LoadPic
   End If
 
+  wTpp = Window.outerWidth: hTpp = Window.outerHeight
+
   If OptionMode Then
-    UpdatePos = Window.SetInterval("UpdatePosition()", 500)
+    UpdatePos = Window.SetInterval("UpdatePosition()", 100)
   Else
     If oList.Count>1 Then PicTimer = Window.SetInterval("LoadPic()", PicDelay*1000)
   End If
@@ -146,35 +148,47 @@ Sub RepositionWindow
   aCoords = Split(Coordinates,",")
   x = aCoords(0)
   y = aCoords(1)
-  If OptionMode Then
-    Window.MoveTo x - BorderWidth, y
-  Else
-    Window.MoveTo x, y
-  End If
+  Window.MoveTo x - BorderSize, y
 End Sub
 
 Sub ToggleShortcut
-  RunOnstartup = Crs.checked
-  ShortCutPath = oWSH.SpecialFolders("Startup") & "\" & MyTitle & ".lnk"
-  If RunOnstartup Then
-    If Not oFSO.FileExists(ShortCutPath) Then
-      Set link = oWSH.CreateShortcut(ShortCutPath)
-      link.HotKey = "CTRL+ALT+SHIFT+P"
-      link.TargetPath = PicPath & MyTitle & ".hta"
-      link.Save
+  RunOnstartup = Crs.Checked
+  ShortCutFolder = oWSH.SpecialFolders("Startup")
+  ShortcutExists = False
+  Set oFolder = oFSO.GetFolder(ShortCutFolder)
+  Set oFiles = oFolder.Files
+  For Each oFile In oFiles
+    If LCase(oFSO.GetExtensionName(oFile.Name)) = "lnk" Then
+      Set link = oWSH.CreateShortcut(ShortCutFolder & "\" & oFile.Name)
+      If link.TargetPath=PicPath & MyTitle & ".hta" Then
+        ShortcutExists = True
+        If Not RunOnstartup Then oFSO.DeleteFile ShortCutFolder & "\" & oFile.Name
+      End If
     End If
-  Else
-    If oFSO.FileExists(ShortCutPath) Then
-      oFSO.DeleteFile oWSH.SpecialFolders("Startup") & "\" & MyTitle & ".lnk"
-    End If
+  Next
+  If RunOnstartup And Not ShortcutExists Then
+    ShortCutPath = ShortCutFolder & "\" & MyTitle & Replace(Replace(Replace(Now(),"/",""),":","")," ","") & ".lnk"
+    Set link = oWSH.CreateShortcut(ShortCutPath)
+    link.HotKey = "CTRL+ALT+SHIFT+P"
+    link.TargetPath = PicPath & MyTitle & ".hta"
+    link.Save
   End If
 End Sub
 
 Sub UpdatePosition
   w = Window.outerWidth
   h = Window.outerHeight
-  Tpp.Value = Cint((w * h) / (sw * sh) * 100)
-  Tsp.Value = window.screenX + BorderWidth & "," & window.screenY
+  UpdateTpp = Not(w=wTpp And h=hTpp)
+  w = w - (BorderSize * 2)
+  h = h - BorderSize
+  If UpdateTpp Then
+    NewSize = Cint((w * h) / (sw * sh) * 100)
+    If NewSize>100 Then NewSize = 100
+    Tpp.Value = NewSize
+  Else
+    Tpp.Value = MaxScrPct
+  End If
+  Tsp.Value = window.screenX + BorderSize & "," & window.screenY
   If Mpp.SelectedIndex=0 And Tsp.Value<>CenterCoordinates Then
     Mpp.SelectedIndex=1
     Tsp.style.visibility = "visible"
@@ -189,7 +203,6 @@ Sub LoadPic
   iw = aImage(1): ih = aImage(2)
   ResizePic
   window.document.body.background = PicPath & aImage(0)
-  If OptionMode Then h = h + BorderWidth
   ResizeWindow
   If Coordinates="" Then CenterWindow
 End Sub
@@ -202,8 +215,10 @@ Sub ResizePic
     ResizeFactor = Sqr(MaxArea/ImgArea)
     w = iw * ResizeFactor
     h = ih * ResizeFactor
-    If w>sw Then w = sw: h = sw/w * h
-    If h>sh Then h = sh: w = sh/h * w
+    If w>sw Then h = sw/w * h : w = sw
+    If h>sh Then w = sh/h * w : h = sh
+    w = CInt(w): h = CInt(h)
+    h = h + BorderSize: w = w + (BorderSize * 2)
   End If
 End Sub
 
@@ -213,7 +228,7 @@ End Sub
 
 Sub CenterWindow
 	Window.MoveTo (sw - w)/2, (sh - h)/2
-  CenterCoordinates = window.screenX + BorderWidth & "," & window.screenY
+  CenterCoordinates = window.screenX + BorderSize & "," & window.screenY
 End Sub
 
 Sub ShowOptions
@@ -221,9 +236,9 @@ Sub ShowOptions
   Crs.Style.Zoom = 1.2
   Cbf.Style.Zoom = 1.2
   Csp.Style.Zoom = 1.2
-  Crs.checked = RunOnStartup
-  Cbf.checked = BringToFront
-  Csp.checked = Stretch
+  Crs.Checked = RunOnStartup
+  Cbf.Checked = BringToFront
+  Csp.Checked = Stretch
   Tpd.Value = PicDelay
   Tpp.Value = MaxScrPct
   Tsp.Value = Coordinates
@@ -285,6 +300,7 @@ Sub LaunchTempHTA
   oFile.Close
   MyCode = Replace(MyCode,LCase("CAPTION=NO"),"caption=yes")
   MyCode = Replace(MyCode,LCase("BORDER=NONE"),"border=thick")
+  MyCode = Replace(MyCode,LCase("SCROLL=NO"),"scroll=auto")
   Set oFile = oFSO.OpenTextFile(TempHTA,ForWriting,True)
   oFile.Write MyCode
   oFile.Close
@@ -317,9 +333,10 @@ Sub OnChangeTpp
     Tpp.Value = MaxScrPct
   Else
     MaxScrPct = Tpp.Value
-    ResizePic
   End If
+  ResizePic
   ResizeWindow
+  wTpp = Window.outerWidth: hTpp = Window.outerHeight
 End Sub
 
 Sub OnChangeMPP
@@ -332,8 +349,9 @@ Sub OnChangeMPP
 End Sub
 
 Sub OnChangeTsp
-  If tsp.value<>"" Then 
-    Coordinates = Tsp.value
+  If tsp.Value<>"" Then 
+    Coordinates = Tsp.Value
+    If Left(Coordinates,1)="," Then Coordinates = "0" & Coordinates
     If Not Instr(Coordinates,",") Then Coordinates = Coordinates & ",0"
     RepositionWindow
   End If
@@ -346,9 +364,9 @@ End Sub
 Sub Var2Ini
   Set oFile = oFSO.OpenTextFile(INIFile,ForWriting,True)
   oFile.Write "[Options]" & Z
-  oFile.Write "RunOnStartup=" & Crs.checked & Z
-  oFile.Write "BringToFront=" & Cbf.checked & Z
-  oFile.Write "Stretch=" & Csp.checked & Z
+  oFile.Write "RunOnStartup=" & Crs.Checked & Z
+  oFile.Write "BringToFront=" & Cbf.Checked & Z
+  oFile.Write "Stretch=" & Csp.Checked & Z
   oFile.Write "PicDelay=" & Tpd.Value & Z
   oFile.Write "MaxScrPct=" & Tpp.Value & Z
   If Mpp.SelectedIndex=0 Then Tsp.Value=""
@@ -358,7 +376,7 @@ End Sub
 
 </script>
 <style>
-body {background-size:cover}
+body {background-size:cover; background-attachment:fixed; background-repeat:no-repeat}
 br {font-size: 16pt} 
 .cc {
 font-family: sans-serif;
