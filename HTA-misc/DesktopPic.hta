@@ -27,7 +27,7 @@ Set oSettings = CreateObject("Scripting.Dictionary")
 Set DigitsOnly = New RegExp: DigitsOnly.Pattern = "[^0-9]"
 Set DigitsComma = New RegExp: DigitsComma.Pattern = "[^0-9,]"
 Dim PicTimer,UpdatePos,w,h,iw,ih,CenterCoordinates,hTpp,wTpp,M1,M2,ArrLang,L(6)
-ReDim oPicList(-1)
+ReDim ArrPic(-1)
 Z = VBCRLF
 
 L(0)="Place at least one image file in the folder shown below|No image files found|Run on startup|Bring to front on start|Stretch smaller pictures|Pic delay in seconds|Max percent of screen area|Centered|Custom|Window position|Continue"
@@ -117,12 +117,12 @@ For Each oFile In oFiles
   On Error Goto 0
   If IsImage Then
     iw = oImg.Width: ih = oImg.Height
-    ReDim Preserve oPicList(UBound(oPicList)+1)
-    oPicList(UBound(oPicList)) = oFile.Name & "|" & iw & "|" & ih
+    ReDim Preserve ArrPic(UBound(ArrPic)+1)
+    ArrPic(UBound(ArrPic)) = oFile.Name & "|" & iw & "|" & ih
   End If
 Next
 
-If UBound(oPicList)=-1 Then
+If UBound(ArrPic)=-1 Then
   MsgBox M1 & Z & Z & MyFolder,vbOKonly,M2
   self.close
 End If
@@ -171,7 +171,7 @@ Sub window_onLoad
   If OptionMode Then
     UpdatePos = Window.SetInterval("UpdatePosition()", 100)
   Else
-    If UBound(oPicList)>0 Then PicTimer = Window.SetInterval("LoadPic()", PicDelay*1000)
+    If UBound(ArrPic)>0 Then PicTimer = Window.SetInterval("LoadPic()", PicDelay*1000)
   End If
 
 End Sub
@@ -247,9 +247,9 @@ End Sub
 
 Sub LoadPic
   If Forward Then i = i + 1 Else i = i - 1
-  If i=UBound(oPicList)+1 Then i = 0
-  If i<0 Then i = UBound(oPicList)
-  aImage = Split(oPicList(i),"|")
+  If i=UBound(ArrPic)+1 Then i = 0
+  If i<0 Then i = UBound(ArrPic)
+  aImage = Split(ArrPic(i),"|")
   iw = aImage(1): ih = aImage(2)
   ResizePic
   window.document.body.background = PicPath & aImage(0)
