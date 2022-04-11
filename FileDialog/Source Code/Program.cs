@@ -23,22 +23,21 @@ namespace FileDialog
             string DialogType = "";
             string DialogTitle = "";
             string FileFilter = "";
+            string TestPath = "";
             string StartPath = "";
             string fileName = "";
             string fileNames = "";
-            bool Multi = true;
+            bool Multi = false;
             var ItemList = new List<string>();
             for (int i = 0; i < args.Length; i++)
             {
-                if (System.IO.Directory.Exists(args[i])) {
-                    StartPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, args[i]));
-                }
+                try { TestPath = System.IO.Path.GetFullPath(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, args[i])); }
+                catch { }
+                if (System.IO.Directory.Exists(TestPath)) { StartPath = TestPath; }
                 else if (args[i].ToLower() == "open") { DialogType = "Open"; }
                 else if (args[i].ToLower() == "save") { DialogType = "Save"; }
                 else if (args[i].ToLower() == "folder") { DialogType = "Folder"; }
-                else if (args[i].ToLower() == "false") { Multi = false; }
-                else if (args[i].Contains("|")) { FileFilter = args[i]; }
-                else if (args[i].Substring(0,1) == "~") { DialogTitle = args[i].Substring(1); }
+                else if (args[i].ToLower() == "multi") { Multi = true; }
                 else if (args[i].ToLower() == "documents") { StartPath = "::{450D8FBA-AD25-11D0-98A8-0800361B1103}"; }
                 else if (args[i].ToLower() == "libraries") { StartPath = "::{031E4825-7B94-4dc3-B131-E946B44C8DD5}"; }
                 else if (args[i].ToLower() == "onedrive") { StartPath = "::{018D5C66-4533-4307-9B53-224DE2ED1FE6}"; }
@@ -46,7 +45,8 @@ namespace FileDialog
                 else if (args[i].ToLower() == "thispc") { StartPath = "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}"; }
                 else if (args[i].ToLower() == "this pc") { StartPath = "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}"; }
                 else if (args[i].ToLower() == "userprofile") { StartPath = "::{59031a47-3f72-44a7-89c5-5595fe6b30ee}"; }
-                else { DialogTitle = args[i]; }
+                else if (args[i].Contains("|")) { FileFilter = args[i]; }
+                else if (args[i].Substring(0, 1) == "~") { DialogTitle = args[i].Substring(1); }
             }
             if (DialogType != "")
             {
@@ -106,17 +106,17 @@ namespace FileDialog
             }
             else
             {
-                Console.WriteLine("Usage: FileDialog.exe DialogType [DialogTitle] [StartPath] [DialogFilter] [Multiselect]");
+                Console.WriteLine("Usage: FileDialog.exe DialogType [~DialogTitle] [StartPath] [DialogFilter] [Multi]");
                 Console.WriteLine("DialogType must be one of: Open Save Folder");
                 Console.WriteLine("Parameters may be specified in any order and are not case sensitive");
+                Console.WriteLine("Prefix DialogTitle with ~ Example: ~Select an image file");
                 Console.WriteLine("DialogTitle must be quoted if it contains spaces");
                 Console.WriteLine("If StartPath is quoted, omit or double up trailing backslash");
                 Console.WriteLine("Forward slashes may be used in place of backslash without any need to double up");
                 Console.WriteLine("Relative paths are supported (e.g. .\\MyStuff or ..\\MyStuff)");
                 Console.WriteLine("StartPath may also be one of: Documents Libraries OneDrive Public ThisPC UserProfile");
-                Console.WriteLine("Prefix DialogTitle with ~ to use one of the above words. Example: ~Documents");
-                Console.WriteLine("Multiselect is supported for File Open dialogs and is on (true) by default.");
-                Console.WriteLine("Example: FileDialog.exe Open C:\\Users \"*.ini|*.ini\" false");
+                Console.WriteLine("Multiselect is supported for File Open dialogs and is off by default.");
+                Console.WriteLine("Example: FileDialog.exe Open C:\\Users \"*.ini|*.ini\" multi");
                 Console.WriteLine("Example: FileDialog.exe Open C:\\Users\\ \"*.ini|*.ini\" \"Select one or more INI files\"");
                 Console.WriteLine("Example: FileDialog.exe Save \"C:\\Users\" \"Text files (*.txt)|*.txt\"");
                 Console.WriteLine("Example: FileDialog.exe Save \"C:\\Users\\\\\" \"Text files (*.txt)|*.txt\"");
