@@ -25,7 +25,7 @@ Set oOutput = oFSO.OpenTextFile(OutputFile,ForWriting,True,Ansi)
 
 Do Until oInput.AtEndOfStream
   Char = oInput.Read(1)
-  oOutput.Write Hex(Asc(Char))
+  oOutput.Write Right("0" & Hex(Asc(Char)),2) & " "
 Loop
 
 oInput.Close
