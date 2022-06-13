@@ -5,7 +5,7 @@ Silent = False
 Const ForReading = 1
 Const ForWriting = 2
 Const Ansi = 0
-StartDate = "15741381600000000" '10/28/2099
+DateAdded = "15741381600000000" '10/28/2099
 
 Set oWSH = CreateObject("WScript.Shell")
 Set oFSO = CreateObject("Scripting.FileSystemObject")  
@@ -30,7 +30,7 @@ StartPos = 1
 Do
   FoundPos = InStr(StartPos,Data,"date_added")
   If FoundPos=0 Then Exit Do
-  Data = Mid(Data,1,FoundPos + 12) & StartDate & Mid(Data,FoundPos + 30)
+  Data = Mid(Data,1,FoundPos + 12) & DateAdded & Mid(Data,FoundPos + 30)
   StartPos = FoundPos + 1
 Loop
 
