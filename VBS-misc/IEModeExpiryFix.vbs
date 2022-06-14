@@ -1,5 +1,10 @@
 'Sets the date added for all Edge IE Mode pages to 2099
 'This causes the expiry dates to also be 2099
+'How to use:
+'1. Add your IE Mode pages in Microsoft Edge
+'2. Close Microsoft Edge
+'3. Run this script
+'Repeat the above steps whenever you add more IE Mode pages
 
 Silent = False
 Const ForReading = 1
