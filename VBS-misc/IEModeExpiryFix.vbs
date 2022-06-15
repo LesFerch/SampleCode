@@ -50,11 +50,9 @@ End Sub
 PrefsFile = EdgeData & "Default\Preferences"
 If oFSO.FileExists(PrefsFile) Then EditProfile
 
-Do
-  i = i + 1
+For i = 1 To 999
   PrefsFile = EdgeData & "Profile " & i & "\Preferences"
-  If Not oFSO.FileExists(PrefsFile) Then Exit Do
-  EditProfile
-Loop
+  If oFSO.FileExists(PrefsFile) Then EditProfile
+Next
 
 If Not Silent Then MsgBox "Done"
