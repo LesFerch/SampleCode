@@ -40,6 +40,11 @@ Sub EditProfile
     Data = Mid(Data,1,FoundPos + 12) & DateAdded & Mid(Data,FoundPos + 30)
     StartPos = FoundPos + 1
   Loop
+  
+  'Set "Allow sites to be reloaded in Internet Explorer mode" to "Allow"
+  Data = Replace(Data,"{""ie_user""","{""enabled_state"":1,""ie_user""")
+  Data = Replace(Data,"{""enabled_state"":0,""ie_user""","{""enabled_state"":1,""ie_user""")
+  Data = Replace(Data,"{""enabled_state"":2,""ie_user""","{""enabled_state"":1,""ie_user""")
 
   'Overwrite the Preferences file with the new data
   Set oOutput = oFSO.OpenTextFile(PrefsFile,ForWriting,True,Ansi)
