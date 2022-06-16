@@ -11,14 +11,18 @@ Const ForReading = 1
 Const ForWriting = 2
 Const Ansi = 0
 Dim PrefsFile
-DateAdded = "15741381600000000" '10/28/2099
+DateAdded = "10/28/2099 10:00:00 PM"
+
+Set oDateTime = CreateObject("WbemScripting.SWbemDateTime")
+Call oDateTime.SetVarDate(DateAdded,True)
+EdgeDateAdded = Left(oDateTime.GetFileTime,17)
 
 Set oWSH = CreateObject("WScript.Shell")
 Set oFSO = CreateObject("Scripting.FileSystemObject")
 EdgeData = oWSH.ExpandEnvironmentStrings("%LocalAppData%") & "\Microsoft\Edge\User Data\"
 
 If Not Silent Then
-  Response = MsgBox("Change expiry of all Edge IE Mode pages to 2099?",VBOKCancel)
+  Response = MsgBox("Change expiry of all Edge IE Mode pages to:" & VBCRLF & VBCRLF & DateAdded & " + 30 days?",VBOKCancel)
   If Response=VBCancel Then WScript.Quit
 End If
 
@@ -37,7 +41,7 @@ Sub EditProfile
   Do
     FoundPos = InStr(StartPos,Data,"date_added")
     If FoundPos=0 Then Exit Do
-    Data = Mid(Data,1,FoundPos + 12) & DateAdded & Mid(Data,FoundPos + 30)
+    Data = Mid(Data,1,FoundPos + 12) & EdgeDateAdded & Mid(Data,FoundPos + 30)
     StartPos = FoundPos + 1
   Loop
   
@@ -55,8 +59,8 @@ End Sub
 PrefsFile = EdgeData & "Default\Preferences"
 If oFSO.FileExists(PrefsFile) Then EditProfile
 
-For i = 1 To 999
-  PrefsFile = EdgeData & "Profile " & i & "\Preferences"
+For Each oFolder In oFSO.GetFolder(EdgeData).SubFolders
+  PrefsFile = oFolder.Path & "\Preferences"
   If oFSO.FileExists(PrefsFile) Then EditProfile
 Next
 
