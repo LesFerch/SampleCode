@@ -1,18 +1,27 @@
-'Sets the date added for all Edge IE Mode pages to 2099
-'This causes the expiry dates to also be 2099
-'How to use:
-'1. Add your IE Mode pages in Microsoft Edge
-'2. Close Microsoft Edge
-'3. Run this script
-'Repeat the above steps whenever you add more IE Mode pages
+'Sets the date added for all Edge IE Mode pages to any date you specify below
+'This causes the expiry dates to be the specified date plus 30 days
+'The default date added is a date in 2099, making the expiry a long way in the future
 
-Silent = False
+'How to use:
+'1. Add your IE Mode pages in Microsoft Edge (or add them to the AddSites variable below)
+'2. Close Microsoft Edge (if open)
+'3. Run this script
+'Repeat the above steps to add more IE Mode pages
+
+Silent = False 'Change to True for no prompts
+Setlocale("en-us") 'Locale setting must be consistent with the date format
+DateAdded = "10/28/2099 10:00:00 PM" 'Specify the date here
+'AddSites = "www.fiat.it|www.ferrari.it" 'To add sites, uncomment and edit this line. Separate each page entry with a |.
+
 Const ForReading = 1
 Const ForWriting = 2
 Const Ansi = 0
 Dim PrefsFile
-DateAdded = "10/28/2099 10:00:00 PM"
 
+'Convert AddSites list to an array"
+aAddSites = Split(AddSites,"|")
+
+'Convert the date 
 Set oDateTime = CreateObject("WbemScripting.SWbemDateTime")
 Call oDateTime.SetVarDate(DateAdded,True)
 EdgeDateAdded = Left(oDateTime.GetFileTime,17)
@@ -44,6 +53,15 @@ Sub EditProfile
     Data = Mid(Data,1,FoundPos + 12) & EdgeDateAdded & Mid(Data,FoundPos + 30)
     StartPos = FoundPos + 1
   Loop
+  
+  For i = 0 To UBound(aAddSites)
+    AddSite = aAddSites(i)
+    If Right(AddSite,1)<>"/" Then AddSite = AddSite & "/"
+    If Instr(AddSite,"://")=0 Then AddSite = "http://" & AddSite
+    If Instr(Data,"user_list_data_1")=0 Then Data = Replace(Data,"},""edge"":{",",""user_list_data_1"":{}},""edge"":{")
+    If Instr(Data,AddSite)=0 Then Data = Replace(Data,"""user_list_data_1"":{","""user_list_data_1"":{""" & AddSite & """:{""date_added"":""" & EdgeDateAdded & """,""engine"":2,""visits_after_expiration"":0},")
+    Data = Replace(Data,"},}},","}}},")
+  Next
   
   'Set "Allow sites to be reloaded in Internet Explorer mode" to "Allow"
   Data = Replace(Data,"{""ie_user""","{""enabled_state"":1,""ie_user""")
