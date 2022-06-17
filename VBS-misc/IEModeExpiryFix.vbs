@@ -55,7 +55,7 @@ Sub EditProfile
   Loop
   
   For i = 0 To UBound(aAddSites)
-    AddSite = aAddSites(i)
+    AddSite = LCase(aAddSites(i))
     If Right(AddSite,1)<>"/" Then AddSite = AddSite & "/"
     If Instr(AddSite,"://")=0 Then AddSite = "http://" & AddSite
     If Instr(Data,"user_list_data_1")=0 Then Data = Replace(Data,"},""edge"":{",",""user_list_data_1"":{}},""edge"":{")
