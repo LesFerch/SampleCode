@@ -11,7 +11,9 @@
 Silent = False 'Change to True for no prompts
 Setlocale("en-us") 'Locale setting must be consistent with the date format
 DateAdded = "10/28/2099 10:00:00 PM" 'Specify the date here
-'AddSites = "www.fiat.it|www.ferrari.it" 'To add sites, uncomment and edit this line. Separate each page entry with a |.
+'To add sites, uncomment and edit the AddSites line below. Separate each page entry with a |.
+'Entries must end with a slash unless the URL ends with a file such as .html, .aspx, etc.
+'AddSites = "http://www.fiat.it/|http://www.ferrari.it/"
 
 Const ForReading = 1
 Const ForWriting = 2
@@ -56,7 +58,6 @@ Sub EditProfile
   
   For i = 0 To UBound(aAddSites)
     AddSite = LCase(aAddSites(i))
-    If Right(AddSite,1)<>"/" Then AddSite = AddSite & "/"
     If Instr(AddSite,"://")=0 Then AddSite = "http://" & AddSite
     If Instr(Data,"user_list_data_1")=0 Then Data = Replace(Data,"},""edge"":{",",""user_list_data_1"":{}},""edge"":{")
     If Instr(Data,AddSite)=0 Then Data = Replace(Data,"""user_list_data_1"":{","""user_list_data_1"":{""" & AddSite & """:{""date_added"":""" & EdgeDateAdded & """,""engine"":2,""visits_after_expiration"":0},")
