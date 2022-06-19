@@ -11,9 +11,14 @@
 Silent = False 'Change to True for no prompts
 Setlocale("en-us") 'Locale setting must be consistent with the date format
 DateAdded = "10/28/2099 10:00:00 PM" 'Specify the date here
+
 'To add sites, uncomment and edit the AddSites line below. Separate each page entry with a |.
 'Entries must end with a slash unless the URL ends with a file such as .html, .aspx, etc.
 'AddSites = "http://www.fiat.it/|http://www.ferrari.it/"
+
+'To find and replace a URL, uncomment and edit the FindReplace line below.
+'Separate find and replace strings with a comma and separate each find/replace pair with a |.
+'FindReplace = "http://localServer/register/login.aspx/,http://localserver/register/login.aspx"
 
 Const ForReading = 1
 Const ForWriting = 2
@@ -22,6 +27,7 @@ Dim PrefsFile
 
 'Convert AddSites list to an array"
 aAddSites = Split(AddSites,"|")
+aFindReplace = Split(FindReplace,"|")
 
 'Convert the date 
 Set oDateTime = CreateObject("WbemScripting.SWbemDateTime")
@@ -56,12 +62,19 @@ Sub EditProfile
     StartPos = FoundPos + 1
   Loop
   
+  'Add any sites specified with the AddSites variable
   For i = 0 To UBound(aAddSites)
     AddSite = LCase(aAddSites(i))
     If Instr(AddSite,"://")=0 Then AddSite = "http://" & AddSite
     If Instr(Data,"user_list_data_1")=0 Then Data = Replace(Data,"},""edge"":{",",""user_list_data_1"":{}},""edge"":{")
     If Instr(Data,AddSite)=0 Then Data = Replace(Data,"""user_list_data_1"":{","""user_list_data_1"":{""" & AddSite & """:{""date_added"":""" & EdgeDateAdded & """,""engine"":2,""visits_after_expiration"":0},")
     Data = Replace(Data,"},}},","}}},")
+  Next
+  
+  'Find and replace strings specified with the FindReplace variable
+  For i = 0 To UBound(aFindReplace)
+    aFindReplacePair = Split(aFindReplace(i),",")
+    Data = Replace(Data,aFindReplacePair(0),aFindReplacePair(1))
   Next
   
   'Set "Allow sites to be reloaded in Internet Explorer mode" to "Allow"
