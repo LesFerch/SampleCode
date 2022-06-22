@@ -52,6 +52,12 @@ Sub EditProfile
   Data = oInput.ReadAll
   oInput.Close
 
+  'Exit if user is signed in
+  If InStr(Data,"""account_info"":[]")=0 Then
+    MsgBox ("Microsoft Edge sign-in detected." & VBCRLF & VBCRLF & "Sorry, this script only works with a local (signed-out) Edge profile.")
+    WScript.Quit
+  End If
+
   'Find and change ever IE Mode page entry
   'Possible enhancement: replace this loop with a regexp
   StartPos = 1
