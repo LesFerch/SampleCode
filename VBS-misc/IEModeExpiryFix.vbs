@@ -53,7 +53,7 @@ Sub EditProfile
   oInput.Close
 
   'Exit if user is signed in
-  If InStr(Data,"""account_info"":[]")=0 Then
+  If Not Silent And InStr(Data,"""account_info"":[]")=0 Then
     MsgBox ("Microsoft Edge sign-in detected." & VBCRLF & VBCRLF & "Sorry, this script only works with a local (signed-out) Edge profile.")
     WScript.Quit
   End If
