@@ -32,7 +32,7 @@ Const ForWriting = 2
 Const Ansi = 0
 Dim PrefsFile
 
-'Convert AddSites and FindRelace lists to arrays"
+'Convert AddSites and FindReplace lists to arrays"
 aAddSites = Split(AddSites,"|")
 aFindReplace = Split(FindReplace,"|")
 
