@@ -20,6 +20,7 @@ DateAdded = "10/28/2099 10:00:00 PM" 'Specify the date here
 
 'To add sites, uncomment and edit the AddSites line below. Separate each page entry with a |.
 'Entries must end with a slash unless the URL ends with a file such as .html, .aspx, etc.
+'Entries must be all lowercase!
 'AddSites = "http://www.fiat.it/|http://www.ferrari.it/"
 
 'To find and replace a URL, uncomment and edit the FindReplace line below.
@@ -31,7 +32,7 @@ Const ForWriting = 2
 Const Ansi = 0
 Dim PrefsFile
 
-'Convert AddSites list to an array"
+'Convert AddSites and FindRelace lists to arrays"
 aAddSites = Split(AddSites,"|")
 aFindReplace = Split(FindReplace,"|")
 
@@ -99,9 +100,6 @@ Sub EditProfile
   oOutput.Write Data
   oOutput.Close
 End Sub
-
-PrefsFile = EdgeData & "Default\Preferences"
-If oFSO.FileExists(PrefsFile) Then EditProfile
 
 For Each oFolder In oFSO.GetFolder(EdgeData).SubFolders
   PrefsFile = oFolder.Path & "\Preferences"
