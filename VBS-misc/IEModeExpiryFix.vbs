@@ -2,6 +2,12 @@
 'This causes the expiry dates to be the specified date plus 30 days
 'The default date added is a date in 2099, making the expiry a long way in the future
 
+'This script only works with local Edge profiles. It will not work if Edge is signed-in.
+
+'Note for system administrators: If your computers are in Active Diretory, please consider
+'using the Enterprise Mode Site List instead of this script. See this link:
+'https://docs.microsoft.com/en-us/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode
+
 'How to use:
 '1. Add your IE Mode pages in Microsoft Edge (or add them to the AddSites variable below)
 '2. Close Microsoft Edge (if open)
@@ -58,7 +64,7 @@ Sub EditProfile
     WScript.Quit
   End If
 
-  'Find and change ever IE Mode page entry
+  'Find and change every IE Mode page entry
   'Possible enhancement: replace this loop with a regexp
   StartPos = 1
   Do
