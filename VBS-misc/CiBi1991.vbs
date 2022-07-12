@@ -13,6 +13,7 @@ Do
       Else
           'fail
       End If
+      oH.Close
     End If
   Next
   WScript.Sleep 1000
