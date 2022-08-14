@@ -95,12 +95,16 @@ Function FileCountTopLevelOnly(Folder)
 End Function
 
 Function FileCountRecursive(ByVal Folder)
+  On Error Resume Next
   Set oParent = oFSO.GetFolder(Folder)
-  Count = oParent.Files.Count
-  For Each oSub In oParent.SubFolders
-    Count = Count + FileCountRecursive(oSub.Path)
-  Next
-  FileCountRecursive = Count
+  If Err.Number=0 Then
+    Count = oParent.Files.Count
+    For Each oSub In oParent.SubFolders
+      Count = Count + FileCountRecursive(oSub.Path)
+    Next
+    FileCountRecursive = Count
+  End If
+  On Error Goto 0
 End Function
 
 </script>
