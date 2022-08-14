@@ -12,7 +12,7 @@
 Set oWSH = CreateObject("Wscript.Shell")
 Set oFSO = CreateObject("Scripting.FileSystemObject")
 Set oShell = CreateObject("Shell.Application")
-Dim Counter
+Dim Counter, TotalFiles
 
 MyPath  = Mid(document.URL,8)
 MyFolder = oFSO.GetParentFolderName(MyPath)
@@ -51,6 +51,7 @@ Sub ChangeAlarm
   Else
     AlarmBox.Value = Alarm
   End If
+  CheckThreshold
 End Sub
 
 Sub ChangeCountMethod
@@ -77,6 +78,10 @@ Sub UpdateCount
     TotalFiles = FileCountTopLevelOnly(Folder)
   End If
   CountDisplay.innerHTML = TotalFiles
+  CheckThreshold
+End Sub
+
+Sub CheckThreshold
   If (Alarm>0) And (TotalFiles>=Alarm) Then
     AlarmText.style.visibility = "visible"
   Else
