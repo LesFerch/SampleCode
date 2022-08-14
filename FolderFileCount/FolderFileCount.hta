@@ -26,6 +26,17 @@ Alarm = 0 'Number of files to trigger alarm (0 = no alarm)
 
 'Possible enhancement: Save/read settings to/from registry or INI file.
 
+document.Title = Folder
+Window.ResizeTo 400,350
+
+Sub window_onLoad
+  AlarmText.style.visibility = "hidden"
+  IntervalBox.Value = Interval
+  AlarmBox.Value = Alarm
+  RecurseCheckbox.checked = RecurseSubfolders
+  ChangeInterval
+End Sub
+
 Sub ChangeFolder
   Set oFolder = oShell.BrowseForFolder(0,"Select the folder to watch ",1,0)
   If oFolder Is Nothing Then Exit Sub
@@ -57,18 +68,6 @@ End Sub
 Sub ChangeCountMethod
   RecurseSubfolders = RecurseCheckbox.checked
   UpdateCount()
-End Sub
-
-document.Title = Folder
-
-Window.ResizeTo 400,350
-
-Sub window_onLoad
-  AlarmText.style.visibility = "hidden"
-  IntervalBox.Value = Interval
-  AlarmBox.Value = Alarm
-  RecurseCheckbox.checked = RecurseSubfolders
-  ChangeInterval
 End Sub
 
 Sub UpdateCount
