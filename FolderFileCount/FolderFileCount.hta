@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=9">
+<hta:application
+  id=oHTA
+  icon=explorer.exe
+  maximizebutton=no
+  scroll=no
+>
+<script language="VBScript">
+Set oWSH = CreateObject("Wscript.Shell")
+Set oFSO = CreateObject("Scripting.FileSystemObject")
+Set oShell = CreateObject("Shell.Application")
+Dim Counter, Alarm
+
+MyPath  = Mid(document.URL,8)
+MyFolder = oFSO.GetParentFolderName(MyPath)
+oWSH.CurrentDirectory = MyFolder
+
+'Initial settings:
+Folder = oWSH.ExpandEnvironmentStrings("%UserProfile%") & "\Downloads"
+RecurseSubfolders = False
+Interval = 3 'Number of seconds to wait before counting files again
+Alarm = 0 'Number of files to trigger alarm (0 = no alarm)
+
+'Possible enhancement: Save/read settings to/from registry or INI file.
+
+Sub ChangeFolder
+  Set oFolder = oShell.BrowseForFolder(0,"Select the folder to watch ",1,0)
+  If oFolder Is Nothing Then Exit Sub
+  Folder = oFolder.Self.Path
+  document.Title = Folder
+  UpdateCount()
+End Sub
+
+Sub ChangeInterval
+  If IsNumeric(IntervalBox.Value) Then
+    Interval = CInt(IntervalBox.Value)
+    UpdateCount()
+    clearInterval(Counter)
+    Counter = Window.SetInterval("UpdateCount()", Interval*1000)
+  Else
+    IntervalBox.Value = Interval
+  End If
+End Sub
+
+Sub ChangeAlarm
+  If IsNumeric(AlarmBox.Value) Then
+    Alarm = CInt(AlarmBox.Value)
+  Else
+    AlarmBox.Value = Alarm
+  End If
+End Sub
+
+Sub ChangeCountMethod
+  RecurseSubfolders = RecurseCheckbox.checked
+End Sub
+
+document.Title = Folder
+
+Window.ResizeTo 400,350
+
+Sub window_onLoad
+  AlarmText.style.visibility = "hidden"
+  IntervalBox.Value = Interval
+  AlarmBox.Value = Alarm
+  RecurseCheckbox.checked = RecurseSubfolders
+  ChangeInterval
+End Sub
+
+Sub UpdateCount
+  If RecurseSubfolders Then
+    TotalFiles = FileCountRecursive(Folder)
+  Else
+    TotalFiles = FileCountTopLevelOnly(Folder)
+  End If
+  CountDisplay.innerHTML = TotalFiles
+  If (Alarm>0) And (TotalFiles>=Alarm) Then
+    AlarmText.style.visibility = "visible"
+  Else
+    AlarmText.style.visibility = "hidden"
+  End If
+End Sub
+
+Function FileCountTopLevelOnly(Folder)
+  Set oFolder = oFSO.GetFolder(Folder)
+  Set oFiles = oFolder.Files
+  FileCountTopLevelOnly = oFiles.Count
+End Function
+
+Function FileCountRecursive(ByVal Folder)
+  Set oParent = oFSO.GetFolder(Folder)
+  Count = oParent.Files.Count
+  For Each oSub In oParent.SubFolders
+    Count = Count + FileCountRecursive(oSub.Path)
+  Next
+  FileCountRecursive = Count
+End Function
+
+</script>
+<style>
+  body  {background-color:LemonChiffon; font-family:Segoe UI; font-size:11pt}
+  h2 {animation:blinker 1.5s linear infinite; color:red}
+</style>
+</head>
+<body>
+  <h1 id=CountDisplay></h1>
+  <input type=button id=FolderButton value="Change folder" onClick=ChangeFolder()><br><br>
+  Count files in subfolders: <input type=checkbox id=RecurseCheckbox onClick=ChangeCountMethod()><br><br>
+  Count frequency in seconds: <input type=text size=1 id=IntervalBox onChange=ChangeInterval()><br><br>
+  Alarm threshold: <input type=text size=1 id=AlarmBox onChange=ChangeAlarm()><br>
+  <div id=AlarmText><h2>File threshold has been reached!</h2></div>
+</body>
