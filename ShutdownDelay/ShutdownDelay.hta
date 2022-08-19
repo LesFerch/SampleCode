@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=9">
+<hta:application
+  id=oHTA
+  icon=winmgmt.exe
+  maximizebutton=no
+  scroll=no
+>
+<script language="VBScript">
+Const DefaultWait = 2.5 'minutes
+Const Unattended = True
+Const TestMode = True
+
+Set oWSH = CreateObject("Wscript.Shell")
+Set oFSO = CreateObject("Scripting.FileSystemObject")
+Dim TimeLeftInSeconds,WaitTimer,Wait,PrevWait
+
+MyPath  = Mid(document.URL,8)
+MyName = oFSO.GetFileName(MyPath)
+MyFolder = oFSO.GetParentFolderName(MyPath)
+oWSH.CurrentDirectory = MyFolder
+
+document.Title = MyName
+w = 400: h = 320
+Window.ResizeTo w, h
+Window.MoveTo (screen.availWidth - w)/2, (screen.availHeight - h)/2
+
+Sub window_onLoad
+  Wait = DefaultWait
+  WaitBox.Value = Wait
+  TimeLeftInSeconds = Wait * 60
+  WaitBox.select
+  If Unattended Then
+    UpdateCountdown
+    WaitTimer = Window.SetInterval("UpdateCountdown()", 1000)
+  End If
+End Sub
+
+Sub document_onKeyDown
+  If window.event.keyCode=13 Then RestartCountdown
+End Sub
+
+Sub UpdateCountdown
+  Hours = CInt(TimeLeftInSeconds \ 3600)
+  Minutes = CInt((TimeLeftInSeconds Mod 3600) \ 60)
+  Seconds = TimeLeftInSeconds Mod 60
+  CountDown.innerHTML = Hours & ":" & Right("0" & Minutes,2) & ":" & Right("0" & Seconds,2)
+  If TimeLeftInSeconds<=0 Then
+    If Not TestMode Then oWSH.Run "Shutdown.exe -r -f",1,False
+    self.Close
+    Exit Sub
+  End If
+  TimeLeftInSeconds = TimeLeftInSeconds - 1
+End Sub
+
+Sub RestartCountdown
+  If WaitTimer="" Then WaitTimer = Window.SetInterval("UpdateCountdown()", 1000)
+  WaitBox.select
+  If Not IsNumeric(Replace(WaitBox.Value,":",".")) Then
+    WaitBox.Value = PrevWait
+    WaitBox.select
+    Exit Sub
+  End If
+  PrevWait = WaitBox.Value
+  Wait = WaitBox.Value
+  If InStr(Wait,":")>0 Then
+    aWait = Split(Wait,":")
+    Wait = aWait(0)*60 + aWait(1)
+  End If
+  TimeLeftInSeconds = Wait * 60
+  UpdateCountdown
+End Sub
+
+</script>
+<style>
+  body {background-color:LemonChiffon; font-family:Segoe UI; font-size:11pt}
+  h2 {color:red}
+  .button {width:6em}
+</style>
+</head>
+<body>
+  <h1 id=CountDown>&nbsp</h1>
+  Enter amount of time to wait before shutting down<br><br>
+  Enter a value in minutes or hours:minutes<br><br>
+  0 = Shutdown immediately<br><br>
+  Click X to abort the shutdown<br><br>
+  <input type=text size=8 id=WaitBox>
+  <input type=button class=button id=OKButton value="OK" onClick=RestartCountdown()>
+</body>
+</html>
