@@ -1,4 +1,5 @@
 Const DefaultWait = 2.5
+Const ShutdownCmd = "Shutdown.exe -r -f"
 L1 = "Enter amount of time to wait before shutting down"
 L2 = "Enter a value in minutes or hours:minutes"
 L3 = "0 = Shutdown immediately"
@@ -15,4 +16,4 @@ If InStr(Wait,":")>0 Then
   Wait = aWait(0)*60 + aWait(1)
 End If
 WScript.Sleep Wait * 60 * 1000
-oWSH.Run "Shutdown.exe -r -f",1,False
+oWSH.Run ShutdownCmd,1,False
