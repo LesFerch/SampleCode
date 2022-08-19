@@ -34,6 +34,8 @@ Window.ResizeTo w, h
 Window.MoveTo (screen.availWidth - w)/2, (screen.availHeight - h)/2
 
 Sub window_onLoad
+  ShutdownOption(0).style.zoom = Scale
+  ShutdownOption(1).style.zoom = Scale
   Wait = DefaultWait
   WaitBox.Value = Wait
   TimeLeftInSeconds = Wait * 60
@@ -117,6 +119,7 @@ End Function
   body {background-color:Lavender; font-family:Segoe UI; font-size:11pt}
   h2 {color:red}
   .button {width:6em}
+  .radio {vertical-align:bottom}
 </style>
 </head>
 <body>
@@ -127,7 +130,7 @@ End Function
   Click X to abort the shutdown<br><br>
   <input type=text size=8 id=WaitBox>
   <input type=button class=button id=OKButton value="OK" onClick=RestartCountdown()><br><br>
-  <input type=radio name=ShutdownOption onClick=ReSelectInput()>Shutdown&nbsp
-  <input type=radio name=ShutdownOption onClick=ReSelectInput()>Restart
+  <input type=radio class=radio name=ShutdownOption onClick=ReSelectInput()>Shutdown&nbsp
+  <input type=radio class=radio name=ShutdownOption onClick=ReSelectInput()>Restart
 </body>
 </html>
