@@ -12,9 +12,11 @@
 Const DefaultWait = 2.5 'minutes
 Const Unattended = True
 Const TestMode = True
+Const HKCU = &H80000001
 
 Set oWSH = CreateObject("Wscript.Shell")
 Set oFSO = CreateObject("Scripting.FileSystemObject")
+Set oReg = GetObject("winmgmts:\\.\root\default:StdRegProv")
 Dim TimeLeftInSeconds,WaitTimer,Wait,PrevWait
 
 MyPath  = Mid(document.URL,8)
@@ -23,7 +25,8 @@ MyFolder = oFSO.GetParentFolderName(MyPath)
 oWSH.CurrentDirectory = MyFolder
 
 document.Title = MyName
-w = 400: h = 320
+Scale = GetScale()
+w = 400 * Scale: h = 320 * Scale
 Window.ResizeTo w, h
 Window.MoveTo (screen.availWidth - w)/2, (screen.availHeight - h)/2
 
@@ -72,6 +75,27 @@ Sub RestartCountdown
   TimeLeftInSeconds = Wait * 60
   UpdateCountdown
 End Sub
+
+Function GetScale()
+  GetScale = 1.0
+  Value = oWSH.RegRead("HKCU\Control Panel\Desktop\WindowMetrics\AppliedDPI")
+  If Value > 96 Then
+    'Custom scaling is set
+    GetScale = Value/96
+  Else
+    'See if standard scaling is set
+    Key = "Control Panel\Desktop\PerMonitorSettings"
+    Result = oReg.EnumKey(HKCU, Key, ArrKeys)
+    If Result=0 Then
+      'Assume first monitor in list is the one we want
+      For Each SubKey In ArrKeys
+        Exit For
+      Next
+      Value = oWSH.RegRead("HKCU\" & Key & "\" & SubKey & "\DPIValue")
+      If Value>0 Then GetScale = 1 + (Value * 0.25)
+    End If
+  End If
+End Function
 
 </script>
 <style>
