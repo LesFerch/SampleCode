@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=9">
+<hta:application
+  id=oHTA
+  icon=notepad.exe
+  maximizebutton=no
+  minimizebutton=no
+  sysmenu=no
+  showintaskbar=no
+  contextmenu=no
+  scroll=no
+>
+<script language="VBScript">
+Const EventID = 4
+Const HKCU = &H80000001
+Const LogEvent = True
+Const LogToCSV = True
+Const ForAppending = 8
+
+Set oWSH = CreateObject("Wscript.Shell")
+Set oFSO = CreateObject("Scripting.FileSystemObject")
+Set oReg = GetObject("winmgmts:\\.\root\default:StdRegProv")
+
+MyPath  = Mid(document.URL,8)
+MyName = oFSO.GetFileName(MyPath)
+MyTitle = Split(MyName,".")(0)
+MyFolder = oFSO.GetParentFolderName(MyPath)
+oWSH.CurrentDirectory = MyFolder
+LogFile = ".\" & MyTitle & ".csv"
+
+document.Title = MyTitle
+Scale = GetScale()
+w = 400 * Scale: h = 180 * Scale
+Window.ResizeTo w, h
+Window.MoveTo (screen.availWidth - w)/2, (screen.availHeight - h)/2
+
+UserName = oWSH.ExpandEnvironmentStrings("%UserName%")
+
+Sub window_onLoad
+  B1.disabled = True
+End Sub
+
+Function document_onKeyDown()
+  If window.event.keyCode=115 Or window.event.keyCode=116 Then
+    window.event.keyCode = 0
+    document_onKeyDown = False
+  End If
+End Function
+
+Sub SelectionMade
+  B1.disabled = False
+End Sub
+
+Sub Submit
+  YMD = Year(Now) & "-" & Right("0" & Month(Now),2) & "-" & Right("0" & Day(Now),2)
+  T24 = Right("0" & Hour(Now),2) & ":" & Right("0" & Minute(Now),2)
+  YMDT24 = YMD & "-" & T24
+  LogEntry = YMDT24 & "," & UserName & "," & LR.Options(LR.SelectedIndex).Value
+  If LogEvent Then oWSH.LogEvent EventID,LogEntry
+  If LogToCSV Then
+    Set oLogFile = oFSO.OpenTextFile(LogFile,ForAppending,True)
+    oLogFile.WriteLine LogEntry
+    oLogFile.Close
+  End If
+  self.Close
+  Exit Sub
+End Sub
+
+Function GetScale()
+  GetScale = 1.0
+  Value = oWSH.RegRead("HKCU\Control Panel\Desktop\WindowMetrics\AppliedDPI")
+  If Value > 96 Then
+    'Custom scaling is set
+    GetScale = Value/96
+  Else
+    'See if standard scaling is set
+    Key = "Control Panel\Desktop\PerMonitorSettings"
+    Result = oReg.EnumKey(HKCU, Key, ArrKeys)
+    If Result=0 Then
+      'Assume first monitor in list is the one we want
+      For Each SubKey In ArrKeys
+        Exit For
+      Next
+      Value = oWSH.RegRead("HKCU\" & Key & "\" & SubKey & "\DPIValue")
+      If Value>0 Then GetScale = 1 + (Value * 0.25)
+    End If
+  End If
+End Function
+
+</script>
+
+<style>
+  body {background-color:Lavender; font-family:Segoe UI; font-size:11pt}
+</style>
+</head>
+<body>
+  Please select your reason for logging in today:<br><br>
+  <select name=LoginReason id=LR OnChange=SelectionMade()>
+    <option selected disabled>Reasons:</option>
+    <option>I don't know</option>
+    <option>I prefer not to answer</option>
+    <option>It seemed like a good idea</option>
+    <option>I didn't mean to</option>
+    <option>My dog made me do it</option>
+  </select><br><br>
+  <input type=button id=B1 value=Submit OnClick=Submit()>
+</body>
+</html>
