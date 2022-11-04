@@ -2,9 +2,11 @@
 'This causes the expiry dates to be the specified date plus 30 days
 'The default date added is a date in 2099, making the expiry a long way in the future
 
-'This script only works with local Edge profiles. It will not work if Edge is signed-in.
+'This script only works with completely local Edge profiles. It will not work if Edge is signed-in.
 
-'Note for system administrators: If your computers are in Active Diretory, please consider
+'Optionally run via CScript (i.e. CScript IEModeExpiryFix.vbs) to get console output instead of message boxes.
+
+'Note for system administrators: If your computers are in Active Directory, please consider
 'using the Enterprise Mode Site List instead of this script. See this link:
 'https://docs.microsoft.com/en-us/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode
 
@@ -30,7 +32,7 @@ DateAdded = "10/28/2099 10:00:00 PM" 'Specify the date here
 Const ForReading = 1
 Const ForWriting = 2
 Const Ansi = 0
-Dim PrefsFile
+Dim PrefsFile,MyLog
 
 'Convert AddSites and FindReplace lists to arrays"
 aAddSites = Split(AddSites,"|")
@@ -43,9 +45,10 @@ EdgeDateAdded = Left(oDateTime.GetFileTime,17)
 
 Set oWSH = CreateObject("WScript.Shell")
 Set oFSO = CreateObject("Scripting.FileSystemObject")
-EdgeData = oWSH.ExpandEnvironmentStrings("%LocalAppData%") & "\Microsoft\Edge\User Data\"
 
-If Not Silent Then
+CScript = InStr(LCase(WScript.FullName),"cscript")>0
+
+If Not Silent And Not CScript Then
   Response = MsgBox("Change expiry of all Edge IE Mode pages to:" & VBCRLF & VBCRLF & DateAdded & " + 30 days?",VBOKCancel)
   If Response=VBCancel Then WScript.Quit
 End If
@@ -53,17 +56,34 @@ End If
 'Edge must be closed to modify the Preferences file
 oWSH.Run "TaskKill /im MSEdge.exe /f",0,True
 
+LocalAppData = oWSH.ExpandEnvironmentStrings("%LocalAppData%")
+
+LogMsg "Profiles processed:"
+
+ProcessProfiles("Edge") 'For released Edge profile
+ProcessProfiles("Edge Beta") 'For Beta Edge profile
+ProcessProfiles("Edge Dev") 'For Dev Edge profile
+ProcessProfiles("Edge SxS") 'For Canary Edge profile
+
+Sub LogMsg(Msg)
+  MyLog = MyLog & Msg & VBCRLF & VBCRLF
+End Sub
+
 Sub EditProfile
   'Read contents of Edge Preferences file into a variable
   Set oInput = oFSO.OpenTextFile(PrefsFile,ForReading)
   Data = oInput.ReadAll
   oInput.Close
 
+  LogMsg PrefsFile
+
   'Exit if user is signed in
-  If Not Silent And InStr(Data,"""account_info"":[]")=0 And InStr(Data,"account_info")>0 Then
-    MsgBox ("Microsoft Edge sign-in detected." & VBCRLF & VBCRLF & "Sorry, this script only works with a local (signed-out) Edge profile.")
-    WScript.Quit
+  If InStr(Data,"""account_info"":[]")=0 And InStr(Data,"account_info")>0 Then
+    LogMsg "Edge profile sign-in detected. Profile cannot be updated."
+    Exit Sub
   End If
+
+  OriginalData = Data
 
   'Find and change every IE Mode page entry
   'Possible enhancement: replace this loop with a regexp
@@ -96,14 +116,26 @@ Sub EditProfile
   Data = Replace(Data,"{""enabled_state"":2,""ie_user""","{""enabled_state"":1,""ie_user""")
 
   'Overwrite the Preferences file with the new data
-  Set oOutput = oFSO.OpenTextFile(PrefsFile,ForWriting,True,Ansi)
-  oOutput.Write Data
-  oOutput.Close
+  If Data<>OriginalData Then
+    LogMsg "Profile updated"
+    Set oOutput = oFSO.OpenTextFile(PrefsFile,ForWriting,True,Ansi)
+    oOutput.Write Data
+    oOutput.Close
+  Else
+    LogMsg "Profile already updated"
+  End If
 End Sub
 
-For Each oFolder In oFSO.GetFolder(EdgeData).SubFolders
-  PrefsFile = oFolder.Path & "\Preferences"
-  If oFSO.FileExists(PrefsFile) Then EditProfile
-Next
+Sub ProcessProfiles(ProfileFolder)
+  EdgeData = LocalAppData & "\Microsoft\" & ProfileFolder & "\User Data\"
+  If oFSO.FolderExists(EdgeData) Then
+    For Each oFolder In oFSO.GetFolder(EdgeData).SubFolders
+      PrefsFile = oFolder.Path & "\Preferences"
+      If oFSO.FileExists(PrefsFile) Then EditProfile
+    Next
+  End If
+End Sub
 
-If Not Silent Then MsgBox "Done"
+If Not Silent Then
+  WScript.Echo MyLog
+End If
