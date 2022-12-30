@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=8">
+<script language="VBScript">
+Set oWSH = CreateObject("Wscript.Shell")
+CurBld = oWSH.RegRead("HKLM\Software\Microsoft\Windows NT\CurrentVersion\CurrentBuild")
+window.returnValue = ""
+Args = Split(window.dialogArguments,";")
+document.title = Args(0)
+Sub window_onLoad
+  ha.InnerText = Args(1)
+End Sub
+</script>
+<style>
+</style>
+</head>
+<body>
+<h2 id=ha></h2>
+</body>
+</html>
