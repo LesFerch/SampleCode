@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=9">
+<script language="VBScript">
+Const HKCU = &H80000001
+Set oWSH = CreateObject("Wscript.Shell")
+Set oReg = GetObject("winmgmts:\\.\root\default:StdRegProv")
+
+x = screen.availWidth * 1/3 'use one third of the available width
+y = screen.availHeight * 3/4 'use three quarters of the available height
+Window.ResizeTo x, y
+Window.MoveTo (screen.availWidth - x)/2, (screen.availHeight - y)/2 'Center
+
+Scale = GetScale()
+
+Sub window_onload
+  'Scale checkboxes and radio buttons 
+  cb1.style.zoom = Scale
+  RadioGroup1(0).style.zoom = Scale
+  RadioGroup1(1).style.zoom = Scale
+End Sub
+
+Function GetScale()
+  GetScale = 1.0
+  Value = 0
+  On Error Resume Next
+  Value = oWSH.RegRead("HKCU\Control Panel\Desktop\Win8DpiScaling")
+  If Value=1 Then
+    'Custom scaling is set
+    Value = 96
+    Value = oWSH.RegRead("HKCU\Control Panel\Desktop\WindowMetrics\AppliedDPI")
+    GetScale = Value/96
+  Else
+    'See if standard scaling is set
+    Key = "Control Panel\Desktop\PerMonitorSettings"
+    Result = oReg.EnumKey(HKCU, Key, ArrKeys)
+    If Result=0 Then
+      'Assume first monitor in list is the one we want
+      For Each SubKey In ArrKeys
+        Exit For
+      Next
+      Value = oWSH.RegRead("HKCU\" & Key & "\" & SubKey & "\DPIValue")
+      If Value>0 Then GetScale = 1 + (Value * 0.25)
+    End If
+  End If
+  On Error Goto 0
+End Function
+
+</script>
+<style>
+  body  {background-color:LemonChiffon; font-family:Segoe UI; font-size:11pt}
+  .scaled {vertical-align:bottom}
+</style>
+</head>
+<body>
+  <h1>Heading 1</h1> Body text
+  <h2>Heading 2</h2> Body text
+  <h3>Heading 3</h3> Body text<br><br>
+  <input type=button value="Button"><br>
+  <input type=checkbox class=scaled id=cb1>Check box<br>
+  <input type=radio class=scaled name=RadioGroup1>
+  <input type=radio class=scaled name=RadioGroup1>Radio buttons<br>
+</body>
