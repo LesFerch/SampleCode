@@ -27,8 +27,8 @@ Window.MoveTo x,y
 Window.ResizeTo w,h
 
 Sub document_onKeyDown
-  If window.event.keyCode=13 Then Done
-  If window.event.keyCode=27 Then self.Close
+  If window.event.keyCode=13 Then window.event.keyCode = 0: Done
+  If window.event.keyCode=27 Then window.event.keyCode = 0: self.Close
 End Sub
 
 Sub window_onLoad
@@ -43,14 +43,14 @@ End Sub
 
 </script>
 <style>
-body {background-color:black; font-family:Segoe UI; font-size:11pt}
+body {color:red; background-color:black; font-family:Segoe UI; font-size:11pt}
 .timer {text-align:center}
 </style>
 </head>
 <body>
   <div class=timer>
     Enter minutes to be added:<br><br>
-    <input id=AddTime type=text Size=6>
+    <input id=AddTime type=text size=4 maxlength=4>
     <input type=button Value=OK OnClick=Done()>
   </div>
 </body>

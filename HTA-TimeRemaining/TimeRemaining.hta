@@ -13,7 +13,7 @@
   minimizeButton=no
   maximizeButton=no
   singleinstance=yes
-  SysMenu=yes
+  SysMenu=no
 >
 <script language="VBScript">
 Const DefaultWait = 30 'minutes
@@ -45,7 +45,6 @@ Function document_onKeyDown()
     window.event.keyCode = 0
     document_onKeyDown = False
   End If
-  If window.event.keyCode=13 Then AddTime
 End Function
 
 Sub UpdateCountdown
