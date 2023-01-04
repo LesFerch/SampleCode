@@ -13,7 +13,7 @@
   minimizeButton=no
   maximizeButton=no
   singleinstance=yes
-  SysMenu=no
+  SysMenu=yes
 >
 <script language="VBScript">
 Const DefaultWait = 30 'minutes
@@ -61,29 +61,25 @@ Sub UpdateCountdown
 End Sub
 
 Function GetScale()
-  GetScale = 1.0
-  Value = 0
+  DispScale = 1.0
+  AppliedDPI = 96
   On Error Resume Next
-  Value = oWSH.RegRead("HKCU\Control Panel\Desktop\Win8DpiScaling")
-  If Value=1 Then
-    'Custom scaling is set
-    Value = 96
-    Value = oWSH.RegRead("HKCU\Control Panel\Desktop\WindowMetrics\AppliedDPI")
-    GetScale = Value/96
-  Else
-    'See if standard scaling is set
+  AppliedDPI = oWSH.RegRead("HKCU\Control Panel\Desktop\WindowMetrics\AppliedDPI")
+  DispScale = AppliedDPI / 96
+  CustomScaling = oWSH.RegRead("HKCU\Control Panel\Desktop\Win8DpiScaling")=1
+  If Not CustomScaling Then
     Key = "Control Panel\Desktop\PerMonitorSettings"
     Result = oReg.EnumKey(HKCU, Key, ArrKeys)
     If Result=0 Then
-      'Assume first monitor in list is the one we want
       For Each SubKey In ArrKeys
         Exit For
       Next
       Value = oWSH.RegRead("HKCU\" & Key & "\" & SubKey & "\DPIValue")
-      If Value>0 Then GetScale = 1 + (Value * 0.25)
+      DispScale = DispScale + (Value * 0.25)
     End If
   End If
   On Error Goto 0
+  GetScale = DispScale
 End Function
 
 Sub AddTime
