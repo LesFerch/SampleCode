@@ -61,25 +61,11 @@ Sub UpdateCountdown
 End Sub
 
 Function GetScale()
-  DispScale = 1.0
-  AppliedDPI = 96
+  GetScale = 1.0
   On Error Resume Next
-  AppliedDPI = oWSH.RegRead("HKCU\Control Panel\Desktop\WindowMetrics\AppliedDPI")
-  DispScale = AppliedDPI / 96
-  CustomScaling = oWSH.RegRead("HKCU\Control Panel\Desktop\Win8DpiScaling")=1
-  If Not CustomScaling Then
-    Key = "Control Panel\Desktop\PerMonitorSettings"
-    Result = oReg.EnumKey(HKCU, Key, ArrKeys)
-    If Result=0 Then
-      For Each SubKey In ArrKeys
-        Exit For
-      Next
-      Value = oWSH.RegRead("HKCU\" & Key & "\" & SubKey & "\DPIValue")
-      DispScale = DispScale + (Value * 0.25)
-    End If
-  End If
+  'If user changes scale, they must logout/login for this registry value to change
+  GetScale = oWSH.RegRead("HKCU\Control Panel\Desktop\WindowMetrics\AppliedDPI") / 96
   On Error Goto 0
-  GetScale = DispScale
 End Function
 
 Sub AddTime
