@@ -17,6 +17,7 @@
 >
 <script language="VBScript">
 Const DefaultWait = 30 'minutes
+Const WarningTime = 120 'seconds
 
 Set oWSH = CreateObject("Wscript.Shell")
 Set oFSO = CreateObject("Scripting.FileSystemObject")
@@ -74,7 +75,7 @@ Sub UpdateCountdown
   End If
   If Not AddingTime Then TimeLeftInSeconds = TimeLeftInSeconds - 1
   oWSH.RegWrite "HKCU\Software\TimeRemainingHTA\TimeLeftInSeconds",TimeLeftInSeconds
-  If TimeLeftInSeconds=120 Then oWSH.Run "Powershell.exe -NoLogo -ExecutionPolicy Bypass -File .\TwoMinuteWarning.ps1",0,False
+  If TimeLeftInSeconds=WarningTime Then oWSH.Run "Powershell.exe -NoLogo -ExecutionPolicy Bypass -File .\Warning.ps1",0,False
 End Sub
 
 Function GetScale()
