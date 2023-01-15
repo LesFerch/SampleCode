@@ -20,8 +20,5 @@ Open Task Scheduler, click **Import Task...** and select the file **TimeRemainin
 
 That's it! The scripts will run on next login.
 
+
 **Note**: The tasks are set to run the scripts on login. Since **TimeRemaining.hta** is run in the user context, it automatically closes when the user logs out. However the **Maintain.vbs** script runs as SYSTEM, so it detects when the user logs out and closes itself.
-
-**Note**: The package is set up to run all the scripts in 32bit mode on a 64bit OS. There's no need to run in 64bit mode (that I know of) but if you wish to do so, change all paths, in all files, from **C:\Windows\SysWOW64** to **C:\Windows\System32** and replace **elevate.exe** with the 64bit version available [here](https://www.winability.com/elevate/).
-
-If you wish to modify the package to run on a 32bit OS, make the same path change noted above, but keep the 32bit version of **elevate.exe**.
