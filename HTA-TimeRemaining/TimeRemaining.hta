@@ -9,15 +9,14 @@
   applicationname=TimeRemaining
   scroll=no
   contextmenu=no
-  showintaskbar=no
-  minimizeButton=no
+  showintaskbar=yes
+  minimizeButton=yes
   maximizeButton=no
   singleinstance=yes
-  SysMenu=yes
+  SysMenu=no
 >
 <script language="VBScript">
 Const DefaultWait = 30 'minutes
-Const HKCU = &H80000001
 
 Set oWSH = CreateObject("Wscript.Shell")
 Set oFSO = CreateObject("Scripting.FileSystemObject")
@@ -32,10 +31,26 @@ Scale = GetScale()
 w = 300 * Scale: h = 150 * Scale
 Window.ResizeTo w, h
 Window.MoveTo (screen.availWidth - w)/2, (screen.availHeight - h)/2
+Wait = DefaultWait
+AddingTime = False
+
+If InStr(MyFolder," ")>0 Then
+  MsgBox "This script must be run from a folder with no spaces in its name",vbExclamation,"Error"
+  self.close
+End If
+
+On Error Resume Next
+RegTimeLeft = oWSH.RegRead("HKCU\Software\TimeRemainingHTA\TimeLeftInSeconds")
+TimeStamp = oWSH.RegRead("HKLM\Software\TimeRemainingHTA\TimeStamp")
+TimeSinceLastEntry = DateDiff("s",TimeStamp,Now())
+On Error Goto 0
+If IsNumeric(RegTimeLeft) And TimeSinceLastEntry<2 Then
+  TimeLeftInSeconds = RegTimeLeft
+Else
+  TimeLeftInSeconds = Wait * 60
+End If
 
 Sub window_onLoad
-  Wait = DefaultWait
-  TimeLeftInSeconds = Wait * 60
   UpdateCountdown
   WaitTimer = Window.SetInterval("UpdateCountdown()", 1000)
 End Sub
@@ -57,7 +72,9 @@ Sub UpdateCountdown
     self.Close
     Exit Sub
   End If
-  TimeLeftInSeconds = TimeLeftInSeconds - 1
+  If Not AddingTime Then TimeLeftInSeconds = TimeLeftInSeconds - 1
+  oWSH.RegWrite "HKCU\Software\TimeRemainingHTA\TimeLeftInSeconds",TimeLeftInSeconds
+  If TimeLeftInSeconds=120 Then oWSH.Run "Powershell.exe -NoLogo -ExecutionPolicy Bypass -File .\TwoMinuteWarning.ps1",0,False
 End Sub
 
 Function GetScale()
@@ -69,8 +86,8 @@ Function GetScale()
 End Function
 
 Sub AddTime
-  ClearInterval(WaitTimer)
-  oWSH.Run "elevate.exe -wait4exit mshta.exe " & AddTimeHTA & " " & window.screenLeft & " " & window.screenTop & " " & Scale,0,True
+  AddingTime = True
+  oWSH.Run "elevate.exe -wait4exit C:\Windows\SysWOW64\mshta.exe """ & AddTimeHTA & """ " & window.screenLeft & " " & window.screenTop & " " & Scale,0,True
   On Error Resume Next
   MinutesToAdd = oWSH.RegRead("HKLM\Software\TimeRemainingHTA\AddTime")
   TimeStamp = oWSH.RegRead("HKLM\Software\TimeRemainingHTA\TimeStamp")
@@ -80,7 +97,7 @@ Sub AddTime
     TimeLeftInSeconds = TimeLeftInSeconds + Int(MinutesToAdd * 60)
     UpdateCountdown
   End If
-  WaitTimer = Window.SetInterval("UpdateCountdown()", 1000)
+  AddingTime = False
 End Sub
 
 </script>
