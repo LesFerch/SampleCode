@@ -40,6 +40,14 @@ If InStr(MyFolder," ")>0 Then
   self.close
 End If
 
+Architecture = oWSH.environment("PROCESS").item("PROCESSOR_ARCHITECTURE")
+SystemRoot = oWSH.ExpandEnvironmentStrings("%SystemRoot%")
+WOWPath = SystemRoot & "\SysWOW64\"
+ExePath = SystemRoot & "\System32\"
+ElevateExe = "elevate.exe"
+If Architecture="AMD64" Then ElevateExe = "elevate64.exe"
+If Architecture="x86" And oFSO.FolderExists(WOWPath) Then ExePath = WOWPath
+
 On Error Resume Next
 RegTimeLeft = oWSH.RegRead("HKCU\Software\TimeRemainingHTA\TimeLeftInSeconds")
 TimeStamp = oWSH.RegRead("HKLM\Software\TimeRemainingHTA\TimeStamp")
@@ -88,7 +96,7 @@ End Function
 
 Sub AddTime
   AddingTime = True
-  oWSH.Run "elevate.exe -wait4exit C:\Windows\SysWOW64\mshta.exe """ & AddTimeHTA & """ " & window.screenLeft & " " & window.screenTop & " " & Scale,0,True
+  oWSH.Run ElevateExe & " -wait4exit " & ExePath & "mshta.exe """ & AddTimeHTA & """ " & window.screenLeft & " " & window.screenTop & " " & Scale,0,True
   On Error Resume Next
   MinutesToAdd = oWSH.RegRead("HKLM\Software\TimeRemainingHTA\AddTime")
   TimeStamp = oWSH.RegRead("HKLM\Software\TimeRemainingHTA\TimeStamp")
