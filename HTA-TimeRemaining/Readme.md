@@ -6,7 +6,7 @@ The execution is set up via two scheduled tasks, one running in the user context
 
 The display task includes an **Add Time** button that, when clicked, will run another script elevated to allow an administrator to give the user more time.
 
-The script also display a toast notification to the user when there's 2 minutes left (the time can be adjusted in the script).
+The script also displays a toast notification to the user when there's 2 minutes left (the time can be adjusted in the script).
 
 ## Installation
 
