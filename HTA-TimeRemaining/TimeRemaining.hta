@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<title >Time remaining</title>
+<title>Time remaining</title>
 <head>
 <meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=9">
 <hta:application
@@ -21,7 +21,6 @@ Const WarningTime = 120 'seconds
 
 Set oWSH = CreateObject("Wscript.Shell")
 Set oFSO = CreateObject("Scripting.FileSystemObject")
-Set oReg = GetObject("winmgmts:\\.\root\default:StdRegProv")
 Set oNet = CreateObject("WScript.Network")
 
 Dim TimeLeftInSeconds,WaitTimer
