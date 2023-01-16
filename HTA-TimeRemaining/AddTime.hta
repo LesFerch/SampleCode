@@ -22,6 +22,7 @@ If UBound(aCmd)<3 Then self.Close
 x = aCmd(1)
 y = aCmd(2)
 Scale = aCmd(3)
+MySID = aCmd(4)
 w = 300 * Scale: h = 150 * Scale
 Window.MoveTo x,y
 Window.ResizeTo w,h
@@ -36,8 +37,8 @@ Sub window_onLoad
 End Sub
 
 Sub Done
-  oWSH.RegWrite "HKLM\Software\TimeRemainingHTA\TimeStamp",Now()
-  oWSH.RegWrite "HKLM\Software\TimeRemainingHTA\AddTime",AddTime.Value
+  oWSH.RegWrite "HKLM\Software\TimeRemainingHTA\TimeStamp\" & MySID,Now()
+  oWSH.RegWrite "HKLM\Software\TimeRemainingHTA\AddTime\" & MySID,AddTime.Value
   self.Close
 End Sub
 
