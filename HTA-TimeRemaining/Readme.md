@@ -23,4 +23,4 @@ That's it! The scripts will run on next login.
 
 **Note**: The tasks are set to run the scripts on login. Since **TimeRemaining.hta** is run in the user context, it automatically closes when the user logs out. However the **Maintain.vbs** script runs as SYSTEM, so it detects when the user logs out and closes itself.
 
-**Note**: The **Maintain.vbs** script (that restarts TimeRemaining.hta) does not work reliably with users switching. You must logout and login to be sure that it tracks the correct user.
+**Note**: The **Maintain.vbs** script (that restarts TimeRemaining.hta) does not work reliably with user switching. You must logout and login to be sure that it tracks the correct user.
