@@ -1,1 +1,0 @@
-PowerShell -ExecutionPolicy Bypass .\WinSetView.ps1 .\WinSetView.ini
