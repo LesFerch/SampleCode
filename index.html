@@ -4,23 +4,14 @@
 <script>
 function DownloadAll() {
   dl1.click();
-  dum1.click();
   dl2.click();
-  dum1.click();
   dl3.click();
-}
-function Dummy() {
-  x = "";
-  for (i = 0; i < 1000; i++) {
-    x += "filler";
-  }
 }
 </script>
 <style>
 </style>
 </head>
 <body>
-<input id=dum1 type=button value=Dummy onClick=Dummy()><br>
 <input type=button value=Download onClick=DownloadAll()><br>
 <a id=dl1 href="Test/Test.cmd" download>download</a><br>
 <a id=dl2 href="Test/Test.ps1" download>download</a><br>
