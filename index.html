@@ -9,12 +9,13 @@ function DownloadAll() {
 }
 </script>
 <style>
+.dn {display:none}
 </style>
 </head>
 <body>
 <input type=button value=Download onClick=DownloadAll()><br>
-<a id=dl1 href="Test/Test.cmd" download>download</a><br>
-<a id=dl2 href="Test/Test.ps1" download>download</a><br>
-<a id=dl3 href="Test/Test.txt" download>download</a><br>
+<a class=dn id=dl1 href="Test/Test.cmd" download>download</a><br>
+<a class=dn id=dl2 href="Test/Test.ps1" download>download</a><br>
+<a class=dn id=dl3 href="Test/Test.txt" download>download</a><br>
 </body>
 </html>
