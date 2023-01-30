@@ -2,28 +2,28 @@
 <html>
 <head>
 <script>
-function clickIt(a){
-  a.click();
-  //alert(a);
-}
 function DownloadAll() {
-  delay = 0;
-  for (a of document.querySelectorAll("a")) {
-    if (a.textContent.includes("download")) {
-      aclickTimeout = setTimeout(clickIt,delay,a);
-      delay = delay + 5000;
-    }
+  dl1.click();
+  dum1.click();
+  dl2.click();
+  dum1.click();
+  dl3.click();
+}
+function Dummy() {
+  x = "";
+  for (i = 0; i < 1000; i++) {
+    x += "filler";
   }
 }
 </script>
 <style>
-.dldisp {display:inline}
 </style>
 </head>
 <body>
+<input id=dum1 type=button value=Dummy onClick=Dummy()><br>
 <input type=button value=Download onClick=DownloadAll()><br>
-<a class=dldisp href="Test/Test.cmd" download>download</a><br>
-<a class=dldisp href="Test/Test.ps1" download>download</a><br>
-<a class=dldisp href="Test/Test.txt" download>download</a><br>
+<a id=dl1 href="Test/Test.cmd" download>download</a><br>
+<a id=dl2 href="Test/Test.ps1" download>download</a><br>
+<a id=dl3 href="Test/Test.txt" download>download</a><br>
 </body>
 </html>
