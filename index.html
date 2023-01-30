@@ -4,18 +4,18 @@
 <script>
 function DownloadAll() {
   for (i = 0; i < 2; i++) {
-    document.getElementById("down"+i).click;
+    document.getElementById("dl"+i).click;
   }
 }
 </script>
 <style>
-.NoShow  {display:none}
+.dldisp {display:inline}
 </style>
 </head>
 <body>
 <input type=button value=Download onClick=DownloadAll()>
-<a id=down0 class=NoShow href="Test/Test.cmd" download>Cmd</a><br>
-<a id=down1 class=NoShow href="Test/Test.ps1" download>PS1</a><br>
-<a id=down2 class=NoShow href="Test/Test.txt" download>TXT</a><br>
+<a id=dl0 class=NoShow href="Test/Test.cmd" download>Cmd</a><br>
+<a id=dl1 class=NoShow href="Test/Test.ps1" download>PS1</a><br>
+<a id=dl2 class=NoShow href="Test/Test.txt" download>TXT</a><br>
 </body>
 </html>
