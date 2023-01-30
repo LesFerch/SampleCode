@@ -3,14 +3,15 @@
 <head>
 <script>
 function clickIt(a){
-  a.click();
+  //a.click();
+  alert(a);
 }
 function DownloadAll() {
   delay = 0;
   for (a of document.querySelectorAll("a")) {
     if (a.textContent.includes("download")) {
-      delay = delay + 1000;
       aclickTimeout = setTimeout(clickIt,delay,a);
+      delay = delay + 2000;
     }
   }
 }
