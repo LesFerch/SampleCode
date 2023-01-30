@@ -3,9 +3,12 @@
 <head>
 <script>
 function DownloadAll() {
-  for (const a of document.querySelectorAll("a")) {
+  for (a of document.querySelectorAll("a")) {
     if (a.textContent.includes("download")) {
-      aclickTimeout = setTimeout(a.click(),2000);
+      function aclick(){
+        a.click();
+      }
+      aclickTimeout = setTimeout(aclick(),2000);
     }
   }
 }
