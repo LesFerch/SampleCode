@@ -1,14 +1,16 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html>
 <head>
 <script>
+function clickIt(a){
+  a.click();
+}
 function DownloadAll() {
+  delay = 0;
   for (a of document.querySelectorAll("a")) {
     if (a.textContent.includes("download")) {
-      function aclick(){
-        a.click();
-      }
-      aclickTimeout = setTimeout(aclick(),2000);
+      delay = delay + 1000;
+      aclickTimeout = setTimeout(clickIt,delay,a);
     }
   }
 }
