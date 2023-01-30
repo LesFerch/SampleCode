@@ -2,10 +2,10 @@
 <html>
 <head>
 <script>
-  function DownloadAll() {
-    for (const a of document.querySelectorAll("a")) {
-      if (a.textContent.includes("download")) {
-      a.click();
+function DownloadAll() {
+  for (const a of document.querySelectorAll("a")) {
+    if (a.textContent.includes("download")) {
+      aclickTimeout = setTimeout(a.click(),2000);
     }
   }
 }
