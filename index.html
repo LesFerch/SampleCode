@@ -2,9 +2,11 @@
 <html>
 <head>
 <script>
-function DownloadAll() {
-  for (i = 0; i < 2; i++) {
-    document.getElementById("dl"+i).click;
+  function DownloadAll() {
+    for (const a of document.querySelectorAll("a")) {
+      if (a.textContent.includes("download")) {
+      a.click();
+    }
   }
 }
 </script>
@@ -13,9 +15,9 @@ function DownloadAll() {
 </style>
 </head>
 <body>
-<input type=button value=Download onClick=DownloadAll()>
-<a id=dl0 class=NoShow href="Test/Test.cmd" download>Cmd</a><br>
-<a id=dl1 class=NoShow href="Test/Test.ps1" download>PS1</a><br>
-<a id=dl2 class=NoShow href="Test/Test.txt" download>TXT</a><br>
+<input type=button value=Download onClick=DownloadAll()><br>
+<a class=dldisp href="Test/Test.cmd" download>download</a><br>
+<a class=dldisp href="Test/Test.ps1" download>download</a><br>
+<a class=dldisp href="Test/Test.txt" download>download</a><br>
 </body>
 </html>
