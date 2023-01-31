@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=9">
+<hta:application
+  id=oHTA
+  windowState=maximize
+  border=none
+  scroll=no
+>
+<style>
+  body {background-color:black}
+  .btn {width:100px}
+</style>
+</head>
+<body>
+<script>    
+var w = window.screen.width, h = window.screen.height;
+
+function moveObj(obj){
+  newWidth = Math.floor(Math.random() * w);
+  newHeight = Math.floor(Math.random() * h);
+  if(newWidth>w-100){newWidth=newWidth-100;}
+  if(newHeight>h-20){newHeight=newHeight-20;}
+  obj.style.position="absolute";
+  obj.style.left=newWidth+"px";
+  obj.style.top=newHeight+"px";
+}
+function checkObj(event,obj){
+  var top = obj.style.top.split("px")[0];
+  var left = obj.style.left.split("px")[0];
+  if(top+5 > event.y || left+5 > event.x){moveObj(obj);}
+}
+</script>
+
+<div class="align-topleft">
+  <button onmouseover="moveObj(this)" id="ClickMe" class="btn" type="button">Click Me...</button>
+</div>
+</body>
+</html>
