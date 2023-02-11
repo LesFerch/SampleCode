@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Battery Status</title>
+<meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=9">
+<hta:application
+  id=oHTA
+  icon=perfmon.exe
+  maximizeButton=no
+  minimizeButton=no
+  contextmenu=no
+  showintaskbar=no
+  scroll=no
+  caption=yes
+  border=
+>
+<script language="VBScript">
+'In the section above, change to caption=no and border=none for a minimal interface
+'Alt-F4 can be used to quit the script when there is no caption
+
+If oHTA.caption="no" And oHTA.border="none" Then x = 40
+w=200: h1=75-x: h2=110-x
+Window.ResizeTo w, h1
+Window.MoveTo (screen.availWidth - w), 0
+
+Set oWMI = GetObject("winmgmts:\\.\root\cimv2")
+Set oLocator = CreateObject("WbemScripting.SWbemLocator")
+Set oServices = oLocator.ConnectServer(".","root\wmi")
+Set oResults = oServices.ExecQuery("select * from batteryfullchargedcapacity")
+
+For Each oResult in oResults
+  iFull = oResult.FullChargedCapacity
+Next
+
+Sub window_onload
+  UpdateBattery()
+  UpdateBatteryHandle = Window.SetInterval("UpdateBattery()", 10000) 'Every 10 seconds
+End Sub
+
+Sub window_unonload
+  ClearInterval(UpdateBatteryHandle) 'Not really needed
+End Sub
+
+Sub UpdateBattery
+  Set oResults = oServices.ExecQuery("select * from batterystatus")
+  For Each oResult In oResults
+    iRemaining = oResult.RemainingCapacity
+    bCharging = oResult.Charging
+  Next
+  iPercent = Int(iRemaining/iFull * 100)
+  Msg1.InnerText = iPercent & "% (Not Charging)"
+  Msg2.InnerText = ""
+  Window.ResizeTo w, h1
+  If bCharging Then
+    Msg1.InnerText = iPercent & "% (Charging)"
+    If iPercent>80 Then
+      Msg2.InnerText = "Please stop charging to preserve battery life."
+      Window.ResizeTo w, h2
+    End If
+  Else
+    If iPercent<20 Then
+      Msg2.InnerText = "Battery is low. Please start charging."
+      Window.ResizeTo w, h2
+    End If
+  End If
+End Sub
+
+</script>
+
+<style>
+  body  {color:White; background-color:Black; font-family:Segoe UI; font-size:9pt}
+  .TopM {margin-top:4pt}
+</style>
+</head>
+
+<body>
+  <div id=msg1></div>
+  <div id=msg2 class=TopM></div>
+</body>
+</html>
