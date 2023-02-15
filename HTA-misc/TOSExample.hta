@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Terms of Service</title>
+<meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=9">
+<hta:application
+  contextmenu=no
+  showintaskbar=no
+  sysmenu=no
+>
+<script language="VBScript">
+Set oWSH = CreateObject("Wscript.Shell")
+Scale = GetScale()
+w = 800 * Scale: h = 670 * Scale
+Window.ResizeTo w, h
+Window.MoveTo (screen.availWidth - w)/2, (screen.availHeight - h)/2
+
+Function GetScale()
+  GetScale = 1.0
+  On Error Resume Next
+  GetScale = oWSH.RegRead("HKCU\Control Panel\Desktop\WindowMetrics\AppliedDPI") / 96
+  On Error Goto 0
+End Function
+
+Function document_onKeyDown()
+  If window.event.keyCode=115 Or window.event.keyCode=116 Then
+    window.event.keyCode = 0
+    document_onKeyDown = False
+  End If
+End Function
+
+Sub Agree
+  self.Close
+End Sub
+
+Sub Disagree
+  oWSH.Run "Shutdown.exe -f",0,False
+End Sub
+
+</script>
+
+<style>
+  body  {color:White; background-color:Black; font-family:Segoe UI; font-size:11pt}
+</style>
+</head>
+
+<body>
+  <h1>Computer Lab Agreement</h1>
+  In order to use the computer labs you must agree to the following rules. This computer lab policy will help the computer labs stay in a clean, properly working condition. These rules will be strictly enforced.
+  <br><br>
+  While in the computer lab, I will NOT:
+  <br>
+  <ol>
+  <li>Eat or drink (this includes gum and candy).</li>
+  <li>Damage the computer hardware or software.</li>
+  <li>Modify the computer settings in any way (this includes changing the screensaver, wallpaper, icons, etc.).</li>
+  <li>Use another person’s username and password.</li>
+  <li>Share my password with others.</li>
+  <li>Trespass in other’s folders or files.</li>
+  <li>Visit unauthorized or unacceptable websites.</li>
+  <li>“Hack” into websites that are blocked.</li>
+  <li>List personal information such as name, address, phone number, etc. on websites.</li>
+  <li>Download or install games, music, software, etc.</li>
+  <li>Participate in online chatting (this includes instant messaging).</li>
+  <li>Print anything without the teacher’s permission.</li>
+  <li>Print anything that is not school related.</li>
+  <li>Play computer or Internet games without the teacher’s permission.</li>
+  <li>Leave my computer workstation area in a mess.</li>
+  <li>Leave my workstation logged in to the network after the bell rings to be dismissed.</li>
+  <li>Save files to any place other than my personal folder.</li>
+  </ol>
+  This document serves as your personal warning as to what is considered acceptable behavior in the computer lab. Violations of the computer lab rules may result in the loss of computer/Internet privileges or other disciplinary action.
+  <br><br>
+  <input type=button value='Agree and continue' onClick=Agree()>
+  <input type=button value='Disagree and shutdown' onClick=Disagree()>
+</body>
+</html>
