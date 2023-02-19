@@ -22,7 +22,7 @@ DateAdded = "10/28/2099 10:00:00 PM" 'Specify the date here
 
 'To add sites, uncomment and edit the AddSites line below. Separate each page entry with a |.
 'Entries must end with a slash unless the URL ends with a file such as .html, .aspx, etc.
-'Entries must be all lowercase!
+'The domain part of the entry must be all lowercase.
 'AddSites = "http://www.fiat.it/|http://www.ferrari.it/"
 
 'To find and replace a URL, uncomment and edit the FindReplace line below.
@@ -69,6 +69,23 @@ Sub LogMsg(Msg)
   MyLog = MyLog & Msg & VBCRLF & VBCRLF
 End Sub
 
+Function BadURL(ByVal URL)
+  URL = LCase(URL)
+  NoDoubleSlash = Instr(URL,"://")=0
+  TooManySlashes = Instr(URL,"http:///")>0 Or Instr(URL,"https:///")>0 Or Instr(URL,"file:////")>0
+  BadURL = NoDoubleSlash Or TooManySlashes
+End Function
+
+Function FixURL(byVal URL)
+  URL = URL & " "
+  For i = 2 To Len(URL)
+    If Mid(URL,i,1)="/" And Mid(URL,i-1,1)<>"/" And Mid(URL,i+1,1)<>"/" Then Exit For
+  Next
+  URL = Trim(URL)
+  If i>Len(URL) Then URL = URL & "/"
+  FixURL = LCase(Left(URL,i)) & Mid(URL,i+1)
+End Function
+
 Sub EditProfile
   'Read contents of Edge Preferences file into a variable
   Set oInput = oFSO.OpenTextFile(PrefsFile,ForReading)
@@ -94,14 +111,15 @@ Sub EditProfile
     Data = Mid(Data,1,FoundPos + 12) & EdgeDateAdded & Mid(Data,FoundPos + 30)
     StartPos = FoundPos + 1
   Loop
-  
+
   'Add any sites specified with the AddSites variable
   For i = 0 To UBound(aAddSites)
-    AddSite = LCase(aAddSites(i))
-    If Instr(AddSite,"://")=0 Then AddSite = "http://" & AddSite
-    If Instr(Data,"user_list_data_1")=0 Then Data = Replace(Data,"},""edge"":{",",""user_list_data_1"":{}},""edge"":{")
-    If Instr(Data,AddSite)=0 Then Data = Replace(Data,"""user_list_data_1"":{","""user_list_data_1"":{""" & AddSite & """:{""date_added"":""" & EdgeDateAdded & """,""engine"":2,""visits_after_expiration"":0},")
-    Data = Replace(Data,"},}},","}}},")
+    If Not BadURL(aAddSites(i)) Then
+      AddSite = FixURL(aAddSites(i))
+      If Instr(Data,"user_list_data_1")=0 Then Data = Replace(Data,"},""edge"":{",",""user_list_data_1"":{}},""edge"":{")
+      If Instr(Data,AddSite)=0 Then Data = Replace(Data,"""user_list_data_1"":{","""user_list_data_1"":{""" & AddSite & """:{""date_added"":""" & EdgeDateAdded & """,""engine"":2,""visits_after_expiration"":0},")
+      Data = Replace(Data,"},}},","}}},")
+    End If
   Next
   
   'Find and replace strings specified with the FindReplace variable
