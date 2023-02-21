@@ -16,23 +16,28 @@
 '3. Run this script
 'Repeat the above steps to add more IE Mode pages
 
+ClearAll = False 'Set to True to clear all existing IE Mode entries
+Backup = True 'Set to False for no backup
 Silent = False 'Change to True for no prompts
 Setlocale("en-us") 'Locale setting must be consistent with the date format
 DateAdded = "10/28/2099 10:00:00 PM" 'Specify the date here
 
-'To add sites, uncomment and edit the AddSites line below. Separate each page entry with a |.
+'To add sites, copy, uncomment and edit the AddSites line below. Separate each page entry with a |.
 'Entries must end with a slash unless the URL ends with a file such as .html, .aspx, etc.
 'The domain part of the entry must be all lowercase.
-'AddSites = "http://www.fiat.it/|http://www.ferrari.it/"
+'Edge IE Mode will not accept URL parameters, so the script will trim URLs at the first "?" character 
+'AddSites = "http://www.fait.it/|http://www.ferari.it/"
 
-'To find and replace a URL, uncomment and edit the FindReplace line below.
+'To find and replace a URL, copy, uncomment and edit the FindReplace line below.
 'Separate find and replace strings with a comma and separate each find/replace pair with a |.
-'FindReplace = "http://localServer/register/login.aspx/,http://localserver/register/login.aspx"
+'FindReplace = "fait.it,fiat.it|ferari.it,ferrari.it"
 
 Const ForReading = 1
 Const ForWriting = 2
 Const Ansi = 0
-Dim PrefsFile,MyLog
+Dim PrefsFile,MyLog,Data,OriginalData
+Z = VBCRLF
+ZZ = VBCRLF & VBCRLF
 
 'Convert AddSites and FindReplace lists to arrays"
 aAddSites = Split(AddSites,"|")
@@ -49,7 +54,19 @@ Set oFSO = CreateObject("Scripting.FileSystemObject")
 CScript = InStr(LCase(WScript.FullName),"cscript")>0
 
 If Not Silent And Not CScript Then
-  Response = MsgBox("Change expiry of all Edge IE Mode pages to:" & VBCRLF & VBCRLF & DateAdded & " + 30 days?",VBOKCancel)
+  MC = "Clear all existing IE Mode pages." & ZZ
+  MA = "Add these URLs to IE Mode: " & Z & AddSites & ZZ
+  MF = "Find and replace these strings: " & Z & FindReplace & ZZ
+  MX = "Set all IE Mode pages to expire 30 days after: " & DateAdded & ZZ
+  MB = "A Preferences backup file will be created if any changes are made." & ZZ
+  MK = "Any MSEdge.exe tasks will be killed."
+  If ClearAll Then Msg = Msg & MC
+  If AddSites<>"" Then Msg = Msg & MA
+  If FindReplace<>"" Then Msg = Msg & MF
+  If (Not ClearAll) Or AddSites<>"" Then Msg = Msg & MX
+  If Backup Then Msg = Msg & MB
+  Msg = Msg & MK
+  Response = MsgBox(Msg,VBOKCancel,"The following actions will be performed:")
   If Response=VBCancel Then WScript.Quit
 End If
 
@@ -69,14 +86,16 @@ Sub LogMsg(Msg)
   MyLog = MyLog & Msg & VBCRLF & VBCRLF
 End Sub
 
+'Check URL for too many slashes in prefix
 Function BadURL(ByVal URL)
   URL = LCase(URL)
-  NoDoubleSlash = Instr(URL,"://")=0
-  TooManySlashes = Instr(URL,"http:///")>0 Or Instr(URL,"https:///")>0 Or Instr(URL,"file:////")>0
-  BadURL = NoDoubleSlash Or TooManySlashes
+  BadURL = Instr(URL,"http:///")>0 Or Instr(URL,"https:///")>0 Or Instr(URL,"file:////")>0
 End Function
 
+'Ensure URL starts with something legit, is trimmed at ?, and domain part is lowercase
 Function FixURL(byVal URL)
+  If Instr(URL,"://")=0 Then URL = "https://" & URL
+  URL = Split(URL,"?")(0)
   URL = URL & " "
   For i = 2 To Len(URL)
     If Mid(URL,i,1)="/" And Mid(URL,i-1,1)<>"/" And Mid(URL,i+1,1)<>"/" Then Exit For
@@ -86,11 +105,59 @@ Function FixURL(byVal URL)
   FixURL = LCase(Left(URL,i)) & Mid(URL,i+1)
 End Function
 
+'If Backup flag is True, save original data to date-time-named backup file
+Sub BackupPrefsFile
+  If Backup Then
+    d = Now()
+    s1 = Year(d) & "-" & Right("0" & Month(d),2) & "-" & Right("0" & Day(d),2) & "-"
+    s2 = Right("0" & Hour(d),2) & Right("0" & Minute(d),2) & "-" & Right("0" & Second(d),2)
+    Suffix = "-Backup-" & s1 & s2
+    Call oFSO.OpenTextFile(PrefsFile & Suffix,ForWriting,True,Ansi).Write(OriginalData)
+  End If
+End Sub
+
+Sub ClearEntries
+  FirstBlockEnd = InStr(Data,"user_list_data_1") + 18
+  SecondBlockStart = InStr(Data,"}},""edge""")
+  Data = Left(Data,FirstBlockEnd) & Mid(Data,SecondBlockStart)
+End Sub
+
+'Find and change every IE Mode page entry
+Sub UpdateEntries
+  StartPos = 1
+  Do
+    FoundPos = InStr(StartPos,Data,"date_added")
+    If FoundPos=0 Then Exit Do
+    Data = Mid(Data,1,FoundPos + 12) & EdgeDateAdded & Mid(Data,FoundPos + 30)
+    StartPos = FoundPos + 1
+  Loop
+End Sub
+
+'Add any sites specified with the AddSites variable
+Sub AddEntries
+  For i = 0 To UBound(aAddSites)
+    AddSite = FixURL(aAddSites(i))
+    If Not BadURL(AddSite) Then
+      AddSite = FixURL(aAddSites(i))
+      If Instr(Data,"user_list_data_1")=0 Then Data = Replace(Data,"},""edge"":{",",""user_list_data_1"":{}},""edge"":{")
+      If Instr(Data,AddSite)=0 Then Data = Replace(Data,"""user_list_data_1"":{","""user_list_data_1"":{""" & AddSite & """:{""date_added"":""" & EdgeDateAdded & """,""engine"":2,""visits_after_expiration"":0},")
+      Data = Replace(Data,"},}},","}}},")
+    End If
+  Next
+End Sub
+
+'Find and replace strings specified with the FindReplace variable
+Sub FindReplaceEntries
+  For i = 0 To UBound(aFindReplace)
+    aFindReplacePair = Split(aFindReplace(i),",")
+    Data = Replace(Data,aFindReplacePair(0),aFindReplacePair(1))
+  Next
+End Sub
+
 Sub EditProfile
+
   'Read contents of Edge Preferences file into a variable
-  Set oInput = oFSO.OpenTextFile(PrefsFile,ForReading)
-  Data = oInput.ReadAll
-  oInput.Close
+  Data = oFSO.OpenTextFile(PrefsFile,ForReading).ReadAll
 
   LogMsg PrefsFile
 
@@ -102,31 +169,11 @@ Sub EditProfile
 
   OriginalData = Data
 
-  'Find and change every IE Mode page entry
-  'Possible enhancement: replace this loop with a regexp
-  StartPos = 1
-  Do
-    FoundPos = InStr(StartPos,Data,"date_added")
-    If FoundPos=0 Then Exit Do
-    Data = Mid(Data,1,FoundPos + 12) & EdgeDateAdded & Mid(Data,FoundPos + 30)
-    StartPos = FoundPos + 1
-  Loop
+  If ClearAll Then Call ClearEntries Else UpdateEntries
 
-  'Add any sites specified with the AddSites variable
-  For i = 0 To UBound(aAddSites)
-    If Not BadURL(aAddSites(i)) Then
-      AddSite = FixURL(aAddSites(i))
-      If Instr(Data,"user_list_data_1")=0 Then Data = Replace(Data,"},""edge"":{",",""user_list_data_1"":{}},""edge"":{")
-      If Instr(Data,AddSite)=0 Then Data = Replace(Data,"""user_list_data_1"":{","""user_list_data_1"":{""" & AddSite & """:{""date_added"":""" & EdgeDateAdded & """,""engine"":2,""visits_after_expiration"":0},")
-      Data = Replace(Data,"},}},","}}},")
-    End If
-  Next
-  
-  'Find and replace strings specified with the FindReplace variable
-  For i = 0 To UBound(aFindReplace)
-    aFindReplacePair = Split(aFindReplace(i),",")
-    Data = Replace(Data,aFindReplacePair(0),aFindReplacePair(1))
-  Next
+  AddEntries
+
+  FindReplaceEntries
   
   'Set "Allow sites to be reloaded in Internet Explorer mode" to "Allow"
   Data = Replace(Data,"{""ie_user""","{""enabled_state"":1,""ie_user""")
@@ -135,10 +182,9 @@ Sub EditProfile
 
   'Overwrite the Preferences file with the new data
   If Data<>OriginalData Then
+    BackupPrefsFile
+    Call oFSO.OpenTextFile(PrefsFile,ForWriting,True,Ansi).Write(Data)
     LogMsg "Profile updated"
-    Set oOutput = oFSO.OpenTextFile(PrefsFile,ForWriting,True,Ansi)
-    oOutput.Write Data
-    oOutput.Close
   Else
     LogMsg "Profile already updated"
   End If
