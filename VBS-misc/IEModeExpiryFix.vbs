@@ -16,11 +16,12 @@
 '3. Run this script
 'Repeat the above steps to add more IE Mode pages
 
-ClearAll = False 'Set to True to clear all existing IE Mode entries
+ClearAll = True 'Set to True to clear all existing IE Mode entries
 Backup = True 'Set to False for no backup
 Silent = False 'Change to True for no prompts
-Setlocale("en-us") 'Locale setting must be consistent with the date format
-DateAdded = "10/28/2099 10:00:00 PM" 'Specify the date here
+ForceLowercase = True 'Force domain part of URL to be lowercase
+Setlocale("en-us") 'Do NOT change unless you change the date format for "DateAdded" below
+DateAdded = "10/28/2099 10:00:00 PM" 'Specify the date here (ensure format is consistent with "Setlocale")
 
 'To add sites, copy, uncomment and edit the AddSites line below. Separate each page entry with a |.
 'Entries must end with a slash unless the URL ends with a file such as .html, .aspx, etc.
@@ -28,11 +29,11 @@ DateAdded = "10/28/2099 10:00:00 PM" 'Specify the date here
 'Edge IE Mode will not accept URL parameters, so the script will trim URLs at the first "?" character 
 'AddSites = "http://www.fait.it/|http://www.ferari.it/"
 
-'To find and replace a URL, copy, uncomment and edit the FindReplace line below.
+'To find and replace any string in the Preferences file, copy, uncomment and edit the FindReplace line below.
+'Be very careful that you specify exact, unique, case-sensitive text! Use at your own risk!
 'Separate find and replace strings with a comma and separate each find/replace pair with a |.
-'FindReplace = "fait.it,fiat.it|ferari.it,ferrari.it"
+'FindReplace = "www.fait.it,www.fiat.it|www.ferari.it,www.ferrari.it"
 
-Const ForReading = 1
 Const ForWriting = 2
 Const Ansi = 0
 Dim PrefsFile,MyLog,Data,OriginalData
@@ -96,13 +97,16 @@ End Function
 Function FixURL(byVal URL)
   If Instr(URL,"://")=0 Then URL = "https://" & URL
   URL = Split(URL,"?")(0)
-  URL = URL & " "
-  For i = 2 To Len(URL)
-    If Mid(URL,i,1)="/" And Mid(URL,i-1,1)<>"/" And Mid(URL,i+1,1)<>"/" Then Exit For
-  Next
-  URL = Trim(URL)
-  If i>Len(URL) Then URL = URL & "/"
-  FixURL = LCase(Left(URL,i)) & Mid(URL,i+1)
+  If ForceLowercase Then
+    URL = URL & " "
+    For i = 2 To Len(URL)
+      If Mid(URL,i,1)="/" And Mid(URL,i-1,1)<>"/" And Mid(URL,i+1,1)<>"/" Then Exit For
+    Next
+    URL = Trim(URL)
+    If i>Len(URL) Then URL = URL & "/"
+    URL = LCase(Left(URL,i)) & Mid(URL,i+1)
+  End If
+  FixURL = URL
 End Function
 
 'If Backup flag is True, save original data to date-time-named backup file
@@ -112,7 +116,7 @@ Sub BackupPrefsFile
     s1 = Year(d) & "-" & Right("0" & Month(d),2) & "-" & Right("0" & Day(d),2) & "-"
     s2 = Right("0" & Hour(d),2) & Right("0" & Minute(d),2) & "-" & Right("0" & Second(d),2)
     Suffix = "-Backup-" & s1 & s2
-    Call oFSO.OpenTextFile(PrefsFile & Suffix,ForWriting,True,Ansi).Write(OriginalData)
+    Call oFSO.OpenTextFile(PrefsFile & Suffix,ForWriting,True).Write(OriginalData)
   End If
 End Sub
 
@@ -157,7 +161,7 @@ End Sub
 Sub EditProfile
 
   'Read contents of Edge Preferences file into a variable
-  Data = oFSO.OpenTextFile(PrefsFile,ForReading).ReadAll
+  Data = oFSO.OpenTextFile(PrefsFile).ReadAll
 
   LogMsg PrefsFile
 
@@ -183,7 +187,7 @@ Sub EditProfile
   'Overwrite the Preferences file with the new data
   If Data<>OriginalData Then
     BackupPrefsFile
-    Call oFSO.OpenTextFile(PrefsFile,ForWriting,True,Ansi).Write(Data)
+    Call oFSO.CreateTextFile(PrefsFile,True).Write(Data)
     LogMsg "Profile updated"
   Else
     LogMsg "Profile already updated"
