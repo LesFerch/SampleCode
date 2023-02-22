@@ -16,7 +16,7 @@
 '3. Run this script
 'Repeat the above steps to add more IE Mode pages
 
-ClearAll = True 'Set to True to clear all existing IE Mode entries
+ClearAll = False 'Set to True to clear all existing IE Mode entries
 Backup = True 'Set to False for no backup
 Silent = False 'Change to True for no prompts
 ForceLowercase = True 'Force domain part of URL to be lowercase
