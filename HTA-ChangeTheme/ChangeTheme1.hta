@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" http-equiv="X-UA-Compatible" content="IE=9">
+<hta:application id=oHTA
+  icon=mspaint.exe
+>
+<script language="VBScript">
+Sub ThemeChange
+  Set oElements = document.GetElementsByTagName("input")
+  For Each oElement in oElements
+    If oElement.Type="button" Then oElement.ClassName = "b" & Theme.Value
+    If oElement.Type="text" Then oElement.ClassName = "t" & Theme.Value
+  Next
+End Sub
+</script>
+<style>
+.b1 {color:Green; width:6em}
+.t1 {color:Blue; width:6em}
+.b2 {color:Orange; width:6em}
+.t2 {color:Red; width:6em}
+.b3 {color:Pink; width:6em}
+.t3 {color:Purple; width:6em}
+</style>
+</head>
+<body>
+<select id=Theme onchange=ThemeChange()>
+  <option value=1>Theme 1</option>
+  <option value=2>Theme 2</option>
+  <option value=3>Theme 3</option>
+</select><br><br>
+<input type=button class=b1 value='Button 1'>
+<input type=text class=t1 value='Text 1'><br><br>
+<input type=button class=b1 value='Button 2'>
+<input type=text class=t1 value='Text 2'><br><br>
+<input type=button class=b1 value='Button 3'>
+<input type=text class=t1 value='Text 3'><br><br>
+</body>
+</html>
