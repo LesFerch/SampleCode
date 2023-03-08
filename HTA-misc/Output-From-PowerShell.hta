@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <http-equiv="X-UA-Compatible" content="IE=9">
+  <script language="VBScript">
+    Set oWSH = CreateObject("WScript.Shell")
+    Set oFSO = CreateObject("Scripting.FileSystemObject")
+    Temp = oWSH.ExpandEnvironmentStrings("%Temp%")
+
+    Sub window_onload
+      GetIPs
+    End Sub
+
+    Sub GetIPs
+      OutFile = Temp & "\IPList.txt"
+      CmdLine = "Powershell.exe -NoLogo -ExecutionPolicy Bypass -Command ""Get-DnsClientServerAddress -AddressFamily IPv4 | Select-Object –ExpandProperty ServerAddresses | Out-File """ & OutFile & """ -Encoding Ascii"""
+      oWSH.Run CmdLine,0,True
+      IPList.Value = oFSO.OpenTextFile(OutFile).ReadAll
+    End Sub
+  </script>
+  <style>
+    textarea {font-family:Consolas; font-size:11pt}
+  </style>
+</head>
+<body>
+  <textarea id=IPList rows=20></textarea>
+</body>
+</html>
