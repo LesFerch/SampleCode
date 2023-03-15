@@ -11,11 +11,13 @@
   contextmenu=no
   showintaskbar=no
   scroll=no
-  caption=yes
-  border=
+  caption=no
+  border=none
 >
 <script language="VBScript">
-'In the section above, change to caption=no and border=none for a minimal interface
+'In the section above,
+'set caption=no and border=none for a minimal interface
+'set caption=yes and border= for a regular, captioned window
 'Alt-F4 can be used to quit the script when there is no caption
 
 If oHTA.caption="no" And oHTA.border="none" Then x = 40
@@ -46,13 +48,16 @@ Sub UpdateBattery
   For Each oResult In oResults
     iRemaining = oResult.RemainingCapacity
     bCharging = oResult.Charging
+    bPluggedIn = oResult.PowerOnline
+    Icon = "🔋"
+    If bPluggedIn Then Icon = "🔌"
   Next
   iPercent = Int(iRemaining/iFull * 100)
-  Msg1.InnerText = iPercent & "% (Not Charging)"
+  Msg1.InnerText = iPercent & "% (Not Charging) " & Icon
   Msg2.InnerText = ""
   Window.ResizeTo w, h1
   If bCharging Then
-    Msg1.InnerText = iPercent & "% (Charging)"
+    Msg1.InnerText = iPercent & "% (Charging) " & Icon
     If iPercent>80 Then
       Msg2.InnerText = "Please stop charging to preserve battery life."
       Window.ResizeTo w, h2
