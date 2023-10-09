@@ -11,7 +11,9 @@ Set oOutFile = oFSO.CreateTextFile(OutFile,True)
 Do While Not oInFile.AtEndOfStream
   Line = oInFile.ReadLine
   For i = 0 To UBound(aSearch)
-    Line = Replace(Line,aSearch(i),aReplace(i))
+    Do While Instr(Line,aSearch(i))>0
+      Line = Replace(Line,aSearch(i),aReplace(i))
+    Loop
   Next
   oOutFile.WriteLine Line
 Loop

@@ -8,7 +8,9 @@ aReplace = Array(" ","<i>","<b>")
 Contents = oFSO.OpenTextFile(InFile).ReadAll
 
 For i = 0 To UBound(aSearch)
-  Contents = Replace(Contents,aSearch(i),aReplace(i))
+  Do While Instr(Contents,aSearch(i))>0
+    Contents = Replace(Contents,aSearch(i),aReplace(i))
+  Loop
 Next
 
 oFSO.CreateTextFile(OutFile,True).Write(Contents)
