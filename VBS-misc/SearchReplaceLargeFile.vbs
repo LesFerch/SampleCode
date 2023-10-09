@@ -1,0 +1,20 @@
+set oFSO = CreateObject("Scripting.FileSystemObject")
+InFile = "Eingabe.txt"
+OutFile = "Ausgabe.txt"
+
+aSearch = Array("  ","//","**")
+aReplace = Array(" ","<i>","<b>")
+
+Set oInFile = oFSO.OpenTextFile(InFile)
+Set oOutFile = oFSO.CreateTextFile(OutFile,True)
+
+Do While Not oInFile.AtEndOfStream
+  Line = oInFile.ReadLine
+  For i = 0 To UBound(aSearch)
+    Line = Replace(Line,aSearch(i),aReplace(i))
+  Next
+  oOutFile.WriteLine Line
+Loop
+
+oInFile.Close
+oOutFile.Close
