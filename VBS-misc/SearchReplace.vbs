@@ -1,4 +1,4 @@
-set oFSO = CreateObject("Scripting.FileSystemObject")
+Set oFSO = CreateObject("Scripting.FileSystemObject")
 InFile = "Eingabe.txt"
 OutFile = "Ausgabe.txt"
 
