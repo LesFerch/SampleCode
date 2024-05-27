@@ -10,10 +10,15 @@ There will be a minimum 12' distance between the house at 131 Pleasant Ave and t
 
 The fence will be 6' tall for the 48' rear portion and 4' tall for the 30' front portion, as indicated in blue and green in the image below:
 
+![image](https://github.com/LesFerch/SampleCode/assets/79026235/be4ac086-39c2-46c6-8715-d0b8f61b39e9)
+
 
 ## Fence type
 
 The fence shall be a "Good neighbor" type (same both sides) similar to this example:
+
+![image](https://github.com/LesFerch/SampleCode/assets/79026235/791ed022-3491-48bf-a6b2-d78acb8dfac6)
+
 
 ## Construction
 
