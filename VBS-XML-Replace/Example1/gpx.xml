@@ -1,0 +1,17 @@
+<gpx>
+	<rte>
+		<name>gpx.studio church 2 reduced.gpx</name>
+		<rtept lat="-33.482652" lon="150.159134">
+			<ele>938.4</ele>
+			<desc>076</desc>
+		</rtept>
+		<rtept lat="-33.4825698175265" lon="150.159515440464">
+			<ele>942.3</ele>
+			<desc>162</desc>
+		</rtept>
+		<rtept lat="-33.4828785376496" lon="150.159633457661">
+			<ele>943.4</ele>
+			<desc>098</desc>
+		</rtept>
+	</rte>
+</gpx>

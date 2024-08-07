@@ -1,0 +1,12 @@
+<XMLFile>
+	<Block1>
+		<Text>0/12345</Text>
+		<Grammar>12/123456789</Grammar>
+		<Paragraph>13/1234</Paragraph>
+	</Block1>
+	<Block2>
+		<Text>12/123457</Text>
+		<Grammar>1/1234</Grammar>
+		<Paragraph>213/1222234</Paragraph>
+	</Block2>
+</XMLFile>
